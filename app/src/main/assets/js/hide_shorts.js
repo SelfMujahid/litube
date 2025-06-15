@@ -1,4 +1,5 @@
 (function () {
+    if (!JSON.parse(localStorage.getItem("preferences")).enable_hide_shorts) return;
     if (window.hideShortsInjected) return;
 
     // rules

@@ -1,39 +1,56 @@
 package com.hhst.youtubelite.extension;
 
-import com.tencent.mmkv.MMKV;
-import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.commons.io.FilenameUtils;
+
+import com.google.gson.Gson;
+import com.hhst.youtubelite.webview.YoutubeWebview;
+import java.lang.reflect.Type;
+import java.util.Map;
 
 public class ExtensionManager {
 
-  private final MMKV mmkv;
+  private final YoutubeWebview webview;
+  private Map<String, Boolean> mm = Map.of();
 
-  public ExtensionManager() {
-    mmkv = MMKV.defaultMMKV();
+  public ExtensionManager(YoutubeWebview webview) {
+    this.webview = webview;
+    enableExtension();
   }
 
-  /** Filter the enabled script names from given script list.
-   * @param scripts The script list need to be filtered.
-   * @return The filtered script list.
-   */
-  public static List<String> filter(List<String> scripts) {
-    MMKV mmkv = MMKV.defaultMMKV();
-    return scripts.stream()
-        .filter(
-            script -> {
-              ExtensionType type =
-                  ExtensionType.getExtension(FilenameUtils.removeExtension(script));
-              return type == null || mmkv.getBoolean(type.getName(), type.getDefaultEnable());
-            })
-        .collect(Collectors.toList());
+  private void enableExtension() {
+    webview.evaluateJavascript(
+        String.format(
+            """
+          (function(){
+          const key = 'preferences';
+          let value = localStorage.getItem(key);
+          if (!value) {
+            value = JSON.stringify(%s);
+            localStorage.setItem(key, value);
+          }
+          return value;
+          })();
+        """,
+            new Gson().toJson(Constant.defaultPreferences)),
+        value -> {
+          // Remove the surrounding quotes and escape characters
+          value =
+              value.substring(1, value.length() - 1).replace("\\\\", "\\").replace("\\\"", "\"");
+          Type type = new com.google.gson.reflect.TypeToken<Map<String, Boolean>>() {}.getType();
+          mm = new Gson().fromJson(value, type);
+        });
   }
 
-  public void enableExtension(ExtensionType type, Boolean enable) {
-    mmkv.putBoolean(type.getName(), enable);
+  public void setEnabled(String key, Boolean enable) {
+    mm.put(key, enable);
+    // Update the local storage in the webview
+    webview.evaluateJavascript(
+        String.format(
+            "(function(){localStorage.setItem('preferences', JSON.stringify(%s));})();",
+            new Gson().toJson(mm)),
+        null);
   }
 
-  public Boolean isEnable(ExtensionType type) {
-    return mmkv.getBoolean(type.getName(), type.getDefaultEnable());
+  public Boolean isEnabled(String key) {
+    return mm.get(key);
   }
 }

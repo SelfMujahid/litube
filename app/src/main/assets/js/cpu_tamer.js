@@ -40,6 +40,7 @@
 
 (() => {
   "use strict";
+  if (!JSON.parse(localStorage.getItem("preferences")).enable_cpu_tamer) return; 
 
   const FLAG = "__yt_cpu_tamer_hybrid_running__";
   if (window[FLAG]) return;

@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">litube</string>
-    <string name="base_url" translatable="false">https://m.youtube.com</string>
     <string name="thumbnail">Миниатюра</string>
     <string name="video">Видео</string>
     <string name="cancel">Отменить</string>

@@ -1,5 +1,6 @@
 (function(){
 
+    if (!JSON.parse(localStorage.getItem("preferences")).enable_h264ify) return;
     if (window.h264ifyInjected) return;
 
 

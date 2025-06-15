@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">litube</string>
-    <string name="base_url" translatable="false">https://m.youtube.com</string>
     <string name="thumbnail">Küçük Resim</string>
     <string name="video">Video</string>
     <string name="cancel">İptal</string>

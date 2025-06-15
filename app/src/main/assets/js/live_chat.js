@@ -1,6 +1,7 @@
 // refers: https://greasyfork.org/en/scripts/519614-live-chat-on-youtube-mobile
 (function () {
     'use strict';
+    if (!JSON.parse(localStorage.getItem("preferences")).enable_live_chat) return;
 
     setInterval(() => {
         const isLive = document.querySelector('#movie_player')?.getPlayerResponse()?.playabilityStatus?.liveStreamability &&

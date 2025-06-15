@@ -45,10 +45,13 @@
     <string name="action_next">Skip to next</string>
     <string name="general">General</string>
     <string name="player">Player</string>
-    <string name="ads">Ads</string>
-    <string name="downloader">Downloader</string>
     <string name="other">Other</string>
     <string name="cpu_tamer_experimental">Reduce CPU load on YouTube using hybrid DOMMutation + AnimationFrame strategy with dynamic switching and delay correction(Experimental)</string>
-    <string name="skip_sponsors">Skip sponsors/SelfPromo</string>
+    <string name="skip_sponsors">Skip sponsors</string>
+    <string name="skip_sponsors_sponsor">Skip sponsors</string>
+    <string name="skip_sponsors_selfpromo">Skip self-promo</string>
+    <string name="skip_sponsors_highlight">Skip highlights</string>
     <string name="failed_to_load_video_formats">failed to load video formats</string>
+    <string name="remeber_last_position">Remeber and auto resume last watching position</string>
+    <string name="remember_quality">Remember video quality</string>
 </resources>

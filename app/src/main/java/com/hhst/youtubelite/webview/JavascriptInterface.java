@@ -38,7 +38,7 @@ public class JavascriptInterface {
 
   @android.webkit.JavascriptInterface
   public void extension() {
-    new Handler(Looper.getMainLooper()).post(() -> new ExtensionDialog(context).show());
+    new Handler(Looper.getMainLooper()).post(() -> new ExtensionDialog(context).build());
   }
 
   @android.webkit.JavascriptInterface
@@ -49,5 +49,9 @@ public class JavascriptInterface {
   @android.webkit.JavascriptInterface
   public void updatePlayback(long pos, float playbackSpeed, boolean isPlaying) {
     ((MainActivity) context).playbackService.updateProgress(pos, playbackSpeed, isPlaying);
+  }
+
+  public void shareLink(String url) {
+    ((MainActivity) context).shareLink(url);
   }
 }

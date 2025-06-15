@@ -1,14 +1,31 @@
+/**
+ * @description basic script to YouTube page
+ * @author halcyon
+ * @version 1.0.0
+ * @license MIT
+ * @interface {remember_last_position: true, remember_quality: true}
+ */
 try {
     // Prevent repeated injection of the script
     if (!window.injected) {
+
+        // Get user preferences
+        const prefs = JSON.parse(localStorage.getItem('preferences')) || {
+            remember_last_position: true,
+            remember_quality: true,
+        };
+
         // Utility to get localized text based on the page's language
         const getLocalizedText = (key) => {
+            // Automatically translated by AI
             const languages = {
-                'zh': { 'loop': '循环播放', 'download': '下载', 'ok': '确定', 'video': '视频', 'cover': '封面', 'extension': '插件' },
-                'en': { 'loop': 'Loop Play', 'download': 'Download', 'ok': 'OK', 'video': 'Video', 'cover': 'Cover', 'extension': 'Extension' },
-                'ja': { 'loop': 'ループ再生', 'download': 'ダウンロード', 'ok': 'はい', 'video': 'ビデオ', 'cover': 'カバー', 'extension': 'プラグイン' },
-                'ko': { 'loop': '반복 재생', 'download': '시모타코', 'ok': '확인', 'video': '비디오', 'cover': '커버', 'extension': '플러그인' },
-                'fr': { 'loop': 'Lecture en boucle', 'download': 'Télécharger', 'ok': "D'accord", 'video': 'vidéo', 'cover': 'couverture', 'extension': 'extension' },
+                'zh': { 'loop': '循环播放', 'download': '下载', 'ok': '确定', 'video': '视频', 'cover': '封面', 'extension': '插件', 'share': '分享' },
+                'en': { 'loop': 'Loop Play', 'download': 'Download', 'ok': 'OK', 'video': 'Video', 'cover': 'Cover', 'extension': 'Extension', 'share': 'Share' },
+                'ja': { 'loop': 'ループ再生', 'download': 'ダウンロード', 'ok': 'はい', 'video': 'ビデオ', 'cover': 'カバー', 'extension': 'プラグイン', 'share': '共有' },
+                'ko': { 'loop': '반복 재생', 'download': '시모타코', 'ok': '확인', 'video': '비디오', 'cover': '커버', 'extension': '플러그인', 'share': '공유' },
+                'fr': { 'loop': 'Lecture en boucle', 'download': 'Télécharger', 'ok': "D'accord", 'video': 'vidéo', 'cover': 'couverture', 'extension': 'extension', 'share': 'partager', 'downloading': 'Téléchargement en cours' },
+                'ru': { 'loop': 'Повторение', 'download': 'Скачать', 'ok': 'ОК', 'video': 'видео', 'cover': 'обложка', 'extension': 'расширение', 'share': 'поделиться', 'downloading': 'Загрузка' },
+                'tr': { 'loop': 'Döngü', 'download': 'İndir', 'ok': 'Tamam', 'video': 'Vide', 'cover': 'Kapak', 'extension': 'Uzantı', 'share': 'Paylaş', 'downloading': 'Yükleniyor' },
             };
             const lang = (document.body.lang || 'en').substring(0, 2).toLowerCase();
             return languages[lang] ? languages[lang][key] : languages['en'][key];
@@ -128,8 +145,10 @@ try {
             }
         };
 
-        document.addEventListener('change', saveQuality);
-        window.addEventListener('onVideoIdChange', setQuality);
+        if (prefs.remember_quality) {
+            document.addEventListener('change', saveQuality);
+            window.addEventListener('onVideoIdChange', setQuality);
+        }
 
         // Handle page refresh events
         window.addEventListener('onRefresh', () => {
@@ -182,12 +201,16 @@ try {
                                 window.lastPlayerState = -1;
                                 node.addEventListener('onStateChange', (data) => {
                                     if ([1, 3].includes(data) && window.lastPlayerState === -1 && getPageClass(location.href) === 'watch') {
+                                        // Dispatch global event to notify video start
+                                        window.dispatchEvent(new Event("onVideoStart"));
                                         // Resume playback from saved progress
                                         const progressData = JSON.parse(localStorage.getItem(progressKey) || '{}');
                                         const savedTime = progressData.time || 0;
                                         const expiration = progressData.expiration || 0;
                                         if (Date.now() < expiration && savedTime > 5 && node.getDuration() - savedTime > 5) {
-                                            node.seekTo(savedTime);
+                                            if (prefs.remember_last_position) {
+                                                node.seekTo(savedTime);
+                                            }
                                         } else {
                                             localStorage.removeItem(progressKey);
                                         }
@@ -211,7 +234,7 @@ try {
                                         window.addEventListener('pause', () => node.pauseVideo());
                                         window.addEventListener('skipToNext', () => node.nextVideo());
                                         window.addEventListener('skipToPrevious', () => node.previousVideo());
-                                        window.addEventListener('seek', (e) => node.seekTo(parseInt(e.detail.time)));
+                                        window.addEventListener('seek', e => node.seekTo(parseInt(e.detail.time)));
                                     }
                                     window.lastPlayerState = data;
                                 });
@@ -235,15 +258,13 @@ try {
                                     if (path) {
                                         path.setAttribute("d", "M480-328.46 309.23-499.23l42.16-43.38L450-444v-336h60v336l98.61-98.61 42.16 43.38L480-328.46ZM252.31-180Q222-180 201-201q-21-21-21-51.31v-108.46h60v108.46q0 4.62 3.85 8.46 3.84 3.85 8.46 3.85h455.38q4.62 0 8.46-3.85 3.85-3.84 3.85-8.46v-108.46h60v108.46Q780-222 759-201q-21 21-51.31 21H252.31Z");
                                     }
-                                }
+                                } else return; // fix: avoid clone incomplete node
                                 downloadButton.addEventListener('click', () => {
                                     // opt: fetch video details
                                     const video = document.querySelector("#movie_player");
                                     android.download(location.href, JSON.stringify(video?.getPlayerResponse()))
                                 });
                                 saveButton.parentElement.insertBefore(downloadButton, saveButton);
-                            } else {
-                                console.warn('Save button not found, cannot add download button.');
                             }
                         }
 
@@ -285,7 +306,7 @@ try {
             subtree: true
         });
 
-        // Mark script as injected
+        // Mark script as totally injected
         window.injected = true;
     }
 } catch (error) {

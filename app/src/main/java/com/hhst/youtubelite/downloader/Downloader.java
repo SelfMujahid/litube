@@ -30,7 +30,7 @@ public class Downloader {
    * @param video_url not the video id but the whole url
    * @return DownloadDetails contains everything we need
    */
-  public static DownloadDetails info(String video_url)
+  public static DownloadDetails infoFromYDL(String video_url)
       throws YoutubeDL.CanceledException, YoutubeDLException, InterruptedException {
     YoutubeDLRequest request = new YoutubeDLRequest(video_url);
     request.addOption("--retries", 3);
@@ -46,7 +46,7 @@ public class Downloader {
   }
 
   @Nullable
-  private static synchronized DownloadDetails info(String url, String detailsData) {
+  private static DownloadDetails infoFromData(String detailsData) {
     // Try to parse detail from video data
     var object = JsonParser.parseString(detailsData).getAsJsonObject();
 
@@ -59,7 +59,7 @@ public class Downloader {
           detailsObj.get("author").getAsString(),
           detailsObj.get("shortDescription").getAsString(),
           detailsObj.get("lengthSeconds").getAsLong(),
-          String.format("https://img.youtube.com/vi/%s/maxresdefault.jpg", videoId));
+          String.format("https://img.youtube.com/vi/%s/hqdefault.jpg", videoId));
     }
     return null;
   }
@@ -80,7 +80,7 @@ public class Downloader {
     throw new RuntimeException("Invalid url");
   }
 
-  public static synchronized DownloadDetails infoWithCache(String url, String detailsData)
+  public static DownloadDetails infoWithCache(String url, String detailsData)
       throws Exception {
     String id = getVideoID(url);
     DownloadDetails details = gson.fromJson(cache.decodeString(id), DownloadDetails.class);
@@ -89,14 +89,14 @@ public class Downloader {
         || details.getTitle() == null
         || details.getAuthor() == null
         || details.getThumbnail() == null) {
-      details = info(url, detailsData); // faster
-      if (details == null) details = info(url);
+      details = infoFromData(detailsData); // faster
+      if (details == null) details = infoFromYDL(url);
       cache.encode(id, gson.toJson(details), 60 * 60 * 24 * 7);
     }
     return details;
   }
 
-  public static synchronized List<VideoFormat> fetchFormats(String url)
+  public static List<VideoFormat> fetchFormats(String url)
       throws YoutubeDL.CanceledException, YoutubeDLException, InterruptedException {
     String key = "formats:" + getVideoID(url);
     if (cache.decodeString(key) != null) {

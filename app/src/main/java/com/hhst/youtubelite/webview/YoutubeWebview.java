@@ -22,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.hhst.youtubelite.MainActivity;
 import com.hhst.youtubelite.R;
+import com.hhst.youtubelite.extension.ExtensionManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URISyntaxException;
@@ -44,6 +45,7 @@ public class YoutubeWebview extends WebView {
           "googleusercontent.com",
           "apis.google.com");
   private final ArrayList<String> scripts = new ArrayList<>();
+  public ExtensionManager extensionManager;
   public View fullscreen = null;
 
   public YoutubeWebview(Context context) {
@@ -72,6 +74,7 @@ public class YoutubeWebview extends WebView {
     setLayerType(LAYER_TYPE_HARDWARE, null);
 
     addJavascriptInterface(new JavascriptInterface(getContext()), "android");
+
 
     setWebViewClient(
         new WebViewClient() {
@@ -126,18 +129,14 @@ public class YoutubeWebview extends WebView {
           public void onPageStarted(WebView view, String url, Bitmap favicon) {
             super.onPageStarted(view, url, favicon);
             evaluateJavascript("window.dispatchEvent(new Event('onPageStarted'));", null);
-            for (String js : scripts) {
-              evaluateJavascript(js, null);
-            }
+            doInjectJavaScript();
           }
 
           @Override
           public void onPageFinished(WebView view, String url) {
             super.onPageFinished(view, url);
             evaluateJavascript("window.dispatchEvent(new Event('onPageFinished'));", null);
-            for (String js : scripts) {
-              evaluateJavascript(js, null);
-            }
+            doInjectJavaScript();
           }
         });
 
@@ -223,6 +222,12 @@ public class YoutubeWebview extends WebView {
     super.onWindowVisibilityChanged(VISIBLE);
   }
 
+  private void doInjectJavaScript() {
+      extensionManager = new ExtensionManager(YoutubeWebview.this);
+      for (String js : scripts) {
+          evaluateJavascript(js, null);
+      }
+  }
   public void injectJavaScript(InputStream jsInputStream) {
     String js = readInputStream(jsInputStream);
     if (js != null) scripts.add(js);

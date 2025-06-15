@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -24,7 +25,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.hhst.youtubelite.downloader.DownloadService;
-import com.hhst.youtubelite.extension.ExtensionManager;
 import com.hhst.youtubelite.webview.YoutubeWebview;
 import com.tencent.mmkv.MMKV;
 import com.yausername.ffmpeg.FFmpeg;
@@ -130,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
           webview.injectJavaScript(assetManager.open(Paths.get(dir, initScript).toString()));
           resources.remove(initScript);
         }
-        resources = ExtensionManager.filter(resources);
         for (String script : resources) {
           InputStream stream = assetManager.open(Paths.get(dir, script).toString());
           if (FilenameUtils.getExtension(script).equals("js")) {
@@ -216,5 +215,11 @@ public class MainActivity extends AppCompatActivity {
                 Log.e("unable to update yt-dlp", Log.getStackTraceString(e));
               }
             });
+  }
+
+  public void shareLink(String url) {
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setData(Uri.parse(url));
+    startActivity(intent);
   }
 }

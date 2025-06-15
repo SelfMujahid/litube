@@ -6,6 +6,10 @@ android {
     namespace = "com.hhst.youtubelite"
     compileSdk = 35
 
+    lint {
+        disable.add("MissingTranslation")
+    }
+
     defaultConfig {
         applicationId = "com.hhst.litube"
         minSdk = 26
