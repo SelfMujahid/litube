@@ -2,7 +2,6 @@ package com.hhst.youtubelite.extension;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Process;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.hhst.youtubelite.R;
 
@@ -23,7 +22,7 @@ public class RestartDialog {
     if (intent != null) {
       intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
       context.startActivity(intent);
-      Process.killProcess(Process.myPid());
+      // Process.killProcess(Process.myPid());
     }
   }
 }
