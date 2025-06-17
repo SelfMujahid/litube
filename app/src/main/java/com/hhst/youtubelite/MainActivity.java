@@ -82,7 +82,30 @@ public class MainActivity extends AppCompatActivity {
               runOnUiThread(
                   () -> {
                     webview.build();
-                    webview.loadUrl(getString(R.string.base_url));
+                    // Process the intent data if available
+                    Intent intent = getIntent();
+                    String action = intent.getAction();
+                    String type = intent.getType();
+
+                    if (Intent.ACTION_SEND.equals(action) && type != null && "text/plain".equals(type)) {
+                        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+                        if (sharedText != null && (sharedText.startsWith("http://") || sharedText.startsWith("https://"))) {
+                            Log.d("MainActivity", "Loading shared URL: " + sharedText);
+                            webview.loadUrl(sharedText);
+                        } else {
+                            Log.d("MainActivity", "No valid URL in shared text, loading base URL");
+                            webview.loadUrl(getString(R.string.base_url));
+                        }
+                    } else {
+                        Uri intentUri = intent.getData();
+                        if (intentUri != null) {
+                            Log.d("MainActivity", "Loading URL from intent: " + intentUri);
+                            webview.loadUrl(intentUri.toString());
+                        } else {
+                            Log.d("MainActivity", "Loading base URL: " + getString(R.string.base_url));
+                            webview.loadUrl(getString(R.string.base_url));
+                        }
+                    }
                   });
             });
 
@@ -127,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
                 ? "init.js"
                 : resources.contains("init.min.js") ? "init.min.js" : null;
         if (initScript != null) {
-          webview.injectJavaScript(assetManager.open(Paths.get(dir, initScript).toString()));
+          webview.injectJavaScript(assetManager.open(dir + "/" + initScript));
           resources.remove(initScript);
         }
         for (String script : resources) {
@@ -140,7 +163,7 @@ public class MainActivity extends AppCompatActivity {
         }
       }
     } catch (Exception e) {
-      Log.e("load scripts error", Log.getStackTraceString(e));
+      Log.e("load scripts error", "Failed to load assets: " + Log.getStackTraceString(e));
     }
   }
 
@@ -196,6 +219,16 @@ public class MainActivity extends AppCompatActivity {
     bindService(intent, connection, Context.BIND_AUTO_CREATE);
   }
 
+  @Override
+  protected void onNewIntent(Intent intent) {
+    super.onNewIntent(intent);
+    setIntent(intent);
+    Uri uri = intent.getData();
+    if (uri != null && webview != null) {
+      webview.loadUrl(uri.toString());
+    }
+  }
+
   private void initializeDownloader() {
     Executors.newSingleThreadExecutor()
         .execute(
@@ -204,9 +237,8 @@ public class MainActivity extends AppCompatActivity {
               try {
                 YoutubeDL.getInstance().init(this);
                 FFmpeg.getInstance().init(this);
-              } catch (YoutubeDLException e) {
-                Toast.makeText(this, R.string.downloader_initialize_error, Toast.LENGTH_SHORT)
-                    .show();
+              } catch (Exception e) {
+                runOnUiThread(() -> Toast.makeText(this, R.string.downloader_initialize_error, Toast.LENGTH_SHORT).show());
               }
               // try to update yt-dlp
               try {

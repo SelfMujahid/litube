@@ -29,8 +29,9 @@ public class Extension {
             null,
             R.string.player,
             List.of(
-                new Extension(Constant.rememberLastPosition, R.string.remeber_last_position, null),
-                new Extension(Constant.rememberQuality, R.string.remember_quality, null))),
+                new Extension(Constant.rememberLastPosition, R.string.remember_last_position, null),
+                new Extension(Constant.rememberQuality, R.string.remember_quality, null),
+                new Extension(Constant.enableBackgroundPlay, R.string.background_play, null))),
         new Extension(
             null,
             R.string.skip_sponsors,

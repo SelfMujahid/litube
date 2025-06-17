@@ -1,8 +1,8 @@
-litube is a lightweight Android webview wrapper for youtube, offering many additional features such as ads blocking, background play, video download and so on.
-
+litube is a lightweight Android WebView wrapper for YouTube, offering many additional features such as ads blocking, background playing and video downloading.
 # features
-- Ad blocking, including sponsor ads and video ads.
-- Video download, supports downloading video, audio, and thumbnail.
-- Background play.
-- Display dislike count.
-- Playback-progress-memory, shorts-block, etc.
+* **Block ads, including sponsor ads and video ads.**
+* **Download video, supports downloading videos, audio-only, and saving thumbnails.**
+* **Background playing.**
+* **Display dislike count.**
+* **Hide shorts.**
+* **Chat in live streams, etc.**

@@ -22,6 +22,7 @@ import android.widget.ProgressBar;
 import android.widget.Toast;
 import com.hhst.youtubelite.MainActivity;
 import com.hhst.youtubelite.R;
+import com.hhst.youtubelite.extension.Constant;
 import com.hhst.youtubelite.extension.ExtensionManager;
 import java.io.IOException;
 import java.io.InputStream;
@@ -71,10 +72,12 @@ public class YoutubeWebview extends WebView {
     settings.setDatabaseEnabled(true);
     settings.setDomStorageEnabled(true);
     settings.setCacheMode(WebSettings.LOAD_DEFAULT);
+    settings.setLoadWithOverviewMode(true);
+    settings.setUseWideViewPort(true);
+    settings.setLoadsImagesAutomatically(true);
     setLayerType(LAYER_TYPE_HARDWARE, null);
 
     addJavascriptInterface(new JavascriptInterface(getContext()), "android");
-
 
     setWebViewClient(
         new WebViewClient() {
@@ -219,15 +222,23 @@ public class YoutubeWebview extends WebView {
 
   @Override
   protected void onWindowVisibilityChanged(int visibility) {
-    super.onWindowVisibilityChanged(VISIBLE);
+    // Whether to enable background play
+    if (visibility != VISIBLE
+        && extensionManager != null
+        && extensionManager.isEnabled(Constant.enableBackgroundPlay)) {
+      super.onWindowVisibilityChanged(VISIBLE);
+    } else {
+      super.onWindowVisibilityChanged(visibility);
+    }
   }
 
   private void doInjectJavaScript() {
-      extensionManager = new ExtensionManager(YoutubeWebview.this);
-      for (String js : scripts) {
-          evaluateJavascript(js, null);
-      }
+    extensionManager = new ExtensionManager(YoutubeWebview.this);
+    for (String js : scripts) {
+      evaluateJavascript(js, null);
+    }
   }
+
   public void injectJavaScript(InputStream jsInputStream) {
     String js = readInputStream(jsInputStream);
     if (js != null) scripts.add(js);

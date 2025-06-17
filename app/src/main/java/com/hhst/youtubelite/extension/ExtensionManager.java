@@ -33,8 +33,10 @@ public class ExtensionManager {
             new Gson().toJson(Constant.defaultPreferences)),
         value -> {
           // Remove the surrounding quotes and escape characters
-          value =
-              value.substring(1, value.length() - 1).replace("\\\\", "\\").replace("\\\"", "\"");
+          if (value.length() >= 2 && value.startsWith("\"") && value.endsWith("\"")) {
+            value = value.substring(1, value.length() - 1);
+          }
+          value = value.replace("\\\\", "\\").replace("\\\"", "\"");
           Type type = new com.google.gson.reflect.TypeToken<Map<String, Boolean>>() {}.getType();
           mm = new Gson().fromJson(value, type);
         });

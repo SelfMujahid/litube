@@ -10,9 +10,9 @@
     <string name="downloading">"Downloading: "</string>
     <string name="select_something_first">Select something first</string>
     <string name="retry">Retry</string>
-    <string name="download_complete">"Download complete "</string>
-    <string name="download_canceled">"Download Canceled "</string>
-    <string name="thumbnail_has_been_saved_to">"Thumbnail has been saved to:  "</string>
+    <string name="download_complete">Download complete</string>
+    <string name="download_canceled">Download canceled</string>
+    <string name="thumbnail_has_been_saved_to">Thumbnail has been saved to: </string>
     <string name="download_finished">Download finished:  \"%s\" has been saved to \"%s\"</string>
     <string name="retry_download">"Retry Download "</string>
     <string name="failed_to_download">Failed to download</string>
@@ -52,6 +52,7 @@
     <string name="skip_sponsors_selfpromo">Skip self-promo</string>
     <string name="skip_sponsors_highlight">Skip highlights</string>
     <string name="failed_to_load_video_formats">failed to load video formats</string>
-    <string name="remeber_last_position">Remeber and auto resume last watching position</string>
+    <string name="remember_last_position">Remember and auto resume last watching position</string>
     <string name="remember_quality">Remember video quality</string>
+    <string name="background_play">Enable background play</string>
 </resources>

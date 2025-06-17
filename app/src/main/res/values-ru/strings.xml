@@ -35,10 +35,22 @@
     <string name="restart">Перезапустить</string>
     <string name="display_dislikes">Отображать "Не нравится"</string>
     <string name="hide_shorts">Скрыть "Shorts"</string>
-    <string name="h264ify">H264ify</string>
+    <string name="h264ify">H264ify (форсировать кодировку видео H.264)</string>
     <string name="enable_live_chat">Включить "Чат трансляции"</string>
     <string name="action_pause">Пауза</string>
     <string name="action_play">Играть</string>
     <string name="action_previous">Перейти к предыдущему</string>
     <string name="action_next">Перейти к следующему</string>
+    <string name="general">Общие</string>
+    <string name="player">Плеер</string>
+    <string name="other">Другое</string>
+    <string name="cpu_tamer_experimental">Уменьшить нагрузку на ЦП (экспериментально)</string>
+    <string name="skip_sponsors">Пропускать спонсоры</string>
+    <string name="skip_sponsors_sponsor">Пропускать спонсоры</string>
+    <string name="skip_sponsors_selfpromo">Пропускать самопиар</string>
+    <string name="skip_sponsors_highlight">Пропускать выделенные фрагменты</string>
+    <string name="failed_to_load_video_formats">Не удалось загрузить форматы видео</string>
+    <string name="remember_last_position">Запоминать и автоматически возобновлять последнюю позицию просмотра</string>
+    <string name="remember_quality">Запоминать качество видео</string>
+    <string name="background_play">Включить воспроизведение в фоновом режиме</string>
 </resources>

@@ -40,6 +40,18 @@
     <string name="enable_live_chat">启用直播聊天</string>
     <string name="action_pause">暂停</string>
     <string name="action_play">播放</string>
-    <string name="action_previous">下一个</string>
-    <string name="action_next">上一个</string>
+    <string name="action_previous">上一个</string>
+    <string name="action_next">下一个</string>
+    <string name="general">通用</string>
+    <string name="player">播放器</string>
+    <string name="other">其他</string>
+    <string name="cpu_tamer_experimental">降低CPU负载（实验性）</string>
+    <string name="skip_sponsors">跳过广告</string>
+    <string name="skip_sponsors_sponsor">跳过广告</string>
+    <string name="skip_sponsors_selfpromo">跳过自我宣传</string>
+    <string name="skip_sponsors_highlight">跳过高亮片段</string>
+    <string name="failed_to_load_video_formats">无法加载视频格式</string>
+    <string name="remember_last_position">记住并自动恢复上次观看位置</string>
+    <string name="remember_quality">记住视频质量</string>
+    <string name="background_play">启用后台播放</string>
 </resources>

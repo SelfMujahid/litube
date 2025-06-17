@@ -35,10 +35,22 @@
     <string name="restart">"Yeniden Başlat "</string>
     <string name="display_dislikes">Beğenmeme sayılarını göster</string>
     <string name="hide_shorts">Kısa videoları gizle</string>
-    <string name="h264ify">H264ify</string>
+    <string name="h264ify">H264ify (zorla H.264 video kodlaması)</string>
     <string name="enable_live_chat">Canlı sohbeti etkinleştir</string>
     <string name="action_pause">Duraklat</string>
     <string name="action_play">Oynat</string>
     <string name="action_previous">Öncekine geç</string>
     <string name="action_next">Sonrakine geç</string>
+    <string name="general">Genel</string>
+    <string name="player">Oynatıcı</string>
+    <string name="other">Diğer</string>
+    <string name="cpu_tamer_experimental">CPU yükünü azalt (deneysel)</string>
+    <string name="skip_sponsors">Sponsorlukları atla</string>
+    <string name="skip_sponsors_sponsor">Sponsorlukları atla</string>
+    <string name="skip_sponsors_selfpromo">Kendi tanıtımlarını atla</string>
+    <string name="skip_sponsors_highlight">Öne çıkan bölümleri atla</string>
+    <string name="failed_to_load_video_formats">Video formatları yüklenemedi</string>
+    <string name="remember_last_position">Son izleme konumunu hatırla ve otomatik olarak devam ettir</string>
+    <string name="remember_quality">Video kalitesini hatırla</string>
+    <string name="background_play">Arka planda çalma özelliğini etkinleştir</string>
 </resources>
