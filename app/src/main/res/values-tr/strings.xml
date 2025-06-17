@@ -53,4 +53,5 @@
     <string name="remember_last_position">Son izleme konumunu hatırla ve otomatik olarak devam ettir</string>
     <string name="remember_quality">Video kalitesini hatırla</string>
     <string name="background_play">Arka planda çalma özelliğini etkinleştir</string>
+    <string name="remember_playback_speed">Oynatma hızını hatırla</string>
 </resources>

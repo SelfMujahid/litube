@@ -85,6 +85,7 @@ const processSegments = () => {
           // slider for segments
           let slider = originalSegmentSlider.cloneNode(true);
           if (categories.includes(segment.category)) {
+            slider.style.setProperty("background-image", "none", "important");
             switch (segment.category) {
               case "sponsor":
                 slider.style.setProperty("background-color", "green", "important");

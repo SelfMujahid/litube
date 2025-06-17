@@ -53,4 +53,5 @@
     <string name="remember_last_position">Запоминать и автоматически возобновлять последнюю позицию просмотра</string>
     <string name="remember_quality">Запоминать качество видео</string>
     <string name="background_play">Включить воспроизведение в фоновом режиме</string>
+    <string name="remember_playback_speed">Запоминать скорость воспроизведения</string>
 </resources>

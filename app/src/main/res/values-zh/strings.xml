@@ -54,4 +54,5 @@
     <string name="remember_last_position">记住并自动恢复上次观看位置</string>
     <string name="remember_quality">记住视频质量</string>
     <string name="background_play">启用后台播放</string>
+    <string name="remember_playback_speed">记住播放速度</string>
 </resources>
