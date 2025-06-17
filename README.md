@@ -14,7 +14,7 @@ litube is a lightweight Android WebView wrapper for YouTube, offering many addit
 ## Tips
 * *Ignore battery optimization and allow background activity for this app to prevent it from being mistakenly killed by the system.*
 * *If you don't need to download videos, feel free to use the lite version.*
-* *Ads-blocking and some extensions may affect the normal behavior of Youtube and cause page to get stuck.*
+* *Ads-blocking and some extensions may affect the normal behavior of Youtube and cause page to get stuck. Restart may help.*
 * *Ads-blocking and downloader may not work on all videos — some ads may still be shown or some videos may be unavailable.*
 * *This app should not be regarded as an alternative to other YouTube clients.*
 ## Screenshots
