@@ -16,6 +16,7 @@ public class Constant {
   public static final String rememberLastPosition = "remember_last_position";
   public static final String rememberQuality = "remember_quality";
   public static final String enableBackgroundPlay = "enable_background_play";
+  public static final String rememberPlaybackSpeed = "remember_playback_speed";
   public static final Map<String, Boolean> defaultPreferences =
       Map.ofEntries(
           Map.entry(enableDisplayDislikes, true),
@@ -28,5 +29,6 @@ public class Constant {
           Map.entry(enableCpuTamer, false),
           Map.entry(rememberLastPosition, true),
           Map.entry(rememberQuality, true),
-          Map.entry(enableBackgroundPlay, true));
+          Map.entry(enableBackgroundPlay, true),
+          Map.entry(rememberPlaybackSpeed, false));
 }

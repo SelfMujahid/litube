@@ -3,7 +3,7 @@
  * @author halcyon
  * @version 1.0.0
  * @license MIT
- * @interface {remember_last_position: true, remember_quality: true}
+ * @interface {remember_last_position: true, remember_quality: true, remember_playback_speed: false}
  */
 try {
     // Prevent repeated injection of the script
@@ -13,6 +13,7 @@ try {
         const prefs = JSON.parse(localStorage.getItem('preferences')) || {
             remember_last_position: true,
             remember_quality: true,
+            remember_playback_speed: false
         };
 
         // Utility to get localized text based on the page's language
@@ -121,39 +122,43 @@ try {
             };
         }
 
-        // Set video quality based on saved preference
-        const setQuality = () => {
-            const player = document.getElementById("movie_player");
-            if (player && getPageClass(location.href) === 'watch') {
-                const targetQuality = localStorage.getItem('video_quality') || 'default';
-                const availableQualities = player.getAvailableQualityLevels();
-                if (availableQualities.includes(targetQuality)) {
-                    player.setPlaybackQualityRange(targetQuality);
-                }
+        // Check and save playback speed and video quality setting regularly
+        const saveQualityOrSpeed = (player) => {
+            // Listen to speed change event
+            if (prefs.remember_playback_speed) {
+                player.addEventListener('onPlaybackRateChange', (data) => {
+                    localStorage.setItem('playback_speed', data);
+                });
             }
-        };
-
-        // Save selected video quality when changed
-        const saveQuality = (event) => {
-            const target = event.target;
-            if (target.id.startsWith('player-quality-dropdown') || target.classList.contains('player-quality-settings')) {
-                console.log('Video quality setting changed');
-                const player = document.getElementById("movie_player");
-                if (player) {
-                    localStorage.setItem('video_quality', player.getPlaybackQuality());
-                }
+            // Listen to quality change event
+            if (prefs.remember_quality) {
+                player.addEventListener('onPlaybackQualityChange', (data) => {
+                    localStorage.setItem('video_quality', data);
+                });
             }
-        };
-
-        if (prefs.remember_quality) {
-            document.addEventListener('change', saveQuality);
-            window.addEventListener('onVideoIdChange', setQuality);
         }
+        
 
-        // Handle page refresh events
-        window.addEventListener('onRefresh', () => {
-            window.location.reload();
-        });
+        // Set video quality based on saved preference
+        const setQualityOrSpeed = (player) => {
+            if (player && getPageClass(location.href) === 'watch') {
+                // Resume speed
+                if (prefs.remember_playback_speed) {
+                    const targetSpeed = parseFloat(localStorage.getItem('playback_speed')) || 1;
+                    if (!isNaN(targetSpeed)) {
+                        player.setPlaybackRate(targetSpeed);
+                    }
+                }
+                // Resume quality
+                if (prefs.remember_quality) {
+                    const targetQuality = localStorage.getItem('video_quality') || 'default';
+                    const availableQualities = player.getAvailableQualityLevels();
+                    if (availableQualities.includes(targetQuality)) {
+                        player.setPlaybackQualityRange(targetQuality);
+                    }
+                }
+            }
+        }
 
         // Notify Android when page loading is finished
         window.addEventListener('onProgressChangeFinish', () => {
@@ -214,6 +219,10 @@ try {
                                         } else {
                                             localStorage.removeItem(progressKey);
                                         }
+
+                                        // Save and resume playback speed and video quality
+                                        setQualityOrSpeed(node);
+                                        saveQualityOrSpeed(node);
 
                                         // Show and sync playback controls with Android
                                         const title = node.getPlayerResponse().videoDetails.title;

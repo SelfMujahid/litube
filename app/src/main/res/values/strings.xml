@@ -55,4 +55,5 @@
     <string name="remember_last_position">Remember and auto resume last watching position</string>
     <string name="remember_quality">Remember video quality</string>
     <string name="background_play">Enable background play</string>
+    <string name="remember_playback_speed">Remember playback speed</string>
 </resources>

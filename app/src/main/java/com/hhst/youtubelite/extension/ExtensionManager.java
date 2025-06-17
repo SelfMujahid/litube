@@ -1,6 +1,5 @@
 package com.hhst.youtubelite.extension;
 
-
 import com.google.gson.Gson;
 import com.hhst.youtubelite.webview.YoutubeWebview;
 import java.lang.reflect.Type;
@@ -53,6 +52,6 @@ public class ExtensionManager {
   }
 
   public Boolean isEnabled(String key) {
-    return mm.get(key);
+    return mm.get(key) == null ? Constant.defaultPreferences.getOrDefault(key, false) : mm.get(key);
   }
 }
