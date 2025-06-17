@@ -29,9 +29,9 @@
     <string name="save">Сохранить</string>
     <string name="share">Поделиться</string>
     <string name="share_thumbnail">Поделиться миниатюрой</string>
-    <string name="application_not_found">приложение не найдено</string>
+    <string name="application_not_found">Приложение не найдено</string>
     <string name="extension">Extension</string>
-    <string name="request_restart">Перезапустите для примения изменений</string>
+    <string name="request_restart">Перезапустите для применения изменений</string>
     <string name="restart">Перезапустить</string>
     <string name="display_dislikes">Отображать "Не нравится"</string>
     <string name="hide_shorts">Скрыть "Shorts"</string>

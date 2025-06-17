@@ -31,7 +31,7 @@
     <string name="save">Save</string>
     <string name="share">Share</string>
     <string name="share_thumbnail">Share Thumbnail</string>
-    <string name="application_not_found">application not found</string>
+    <string name="application_not_found">Application not found</string>
     <string name="extension">Extension</string>
     <string name="request_restart">Restart to apply changes</string>
     <string name="restart">"Restart "</string>
@@ -51,8 +51,8 @@
     <string name="skip_sponsors_sponsor">Skip sponsors</string>
     <string name="skip_sponsors_selfpromo">Skip self-promo</string>
     <string name="skip_sponsors_highlight">Skip highlights</string>
-    <string name="failed_to_load_video_formats">failed to load video formats</string>
-    <string name="remember_last_position">Remember and auto resume last watching position</string>
+    <string name="failed_to_load_video_formats">Failed to load video formats</string>
+    <string name="remember_last_position">Remember last watching position</string>
     <string name="remember_quality">Remember video quality</string>
     <string name="background_play">Enable background play</string>
     <string name="remember_playback_speed">Remember playback speed</string>

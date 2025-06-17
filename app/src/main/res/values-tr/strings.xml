@@ -5,11 +5,11 @@
     <string name="download">İndir</string>
     <string name="video_quality">Video Kalitesi</string>
     <string name="confirm">Onayla</string>
-    <string name="downloading">"İndiriliyor: "</string>
+    <string name="downloading">İndiriliyor: </string>
     <string name="select_something_first">Önce bir şey seçin</string>
     <string name="retry">Tekrar Dene</string>
-    <string name="download_complete">"İndirme tamamlandı "</string>
-    <string name="download_canceled">"İndirme iptal edildi "</string>
+    <string name="download_complete">İndirme tamamlandı</string>
+    <string name="download_canceled">İndirme iptal edildi</string>
     <string name="thumbnail_has_been_saved_to">"Küçük resim şu konuma kaydedildi: "</string>
     <string name="download_finished">İndirme tamamlandı: \"%s\" şu konuma kaydedildi: \"%s\"</string>
     <string name="retry_download">"İndirmeyi Tekrar Dene "</string>
