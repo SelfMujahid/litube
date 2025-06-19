@@ -160,6 +160,11 @@ try {
             }
         }
 
+        // Handle page refresh events
+        window.addEventListener('onRefresh', () => {
+            window.location.reload();
+        });
+
         // Notify Android when page loading is finished
         window.addEventListener('onProgressChangeFinish', () => {
             android.finishRefresh();
