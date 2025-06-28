@@ -7,7 +7,7 @@
     <string name="download">Download</string>
     <string name="video_quality">Video Quality</string>
     <string name="confirm">Confirm</string>
-    <string name="downloading">"Downloading: "</string>
+    <string name="downloading">"Downloading"</string>
     <string name="select_something_first">Select something first</string>
     <string name="retry">Retry</string>
     <string name="download_complete">Download complete</string>
@@ -56,4 +56,8 @@
     <string name="remember_quality">Remember video quality</string>
     <string name="background_play">Enable background play</string>
     <string name="remember_playback_speed">Remember playback speed</string>
+    <string name="downloading_video">Downloading video</string>
+    <string name="downloading_audio">Downloading audio</string>
+    <string name="merging">Merging</string>
+    <string name="merging_audio_video">Merging audio and video</string>
 </resources>

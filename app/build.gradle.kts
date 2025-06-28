@@ -20,10 +20,18 @@ android {
 
 
 
-        ndk {
+        """ndk {
             abiFilters.addAll(listOf("arm64-v8a"))
-        }
+        }""".trimIndent()
 
+        splits {
+            abi {
+                isEnable = true
+                reset()
+                include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+                isUniversalApk = false
+            }
+        }
 
 
         buildTypes {
@@ -54,8 +62,8 @@ android {
     dependencies {
         compileOnly(libs.lombok)
         annotationProcessor(libs.lombok)
-        implementation(libs.library)
-        implementation(libs.ffmpeg)
+        implementation(libs.newpipeextractor)
+        implementation(libs.okhttp)
         implementation(libs.mmkv)
         implementation(libs.gson)
         implementation(libs.commons.io)

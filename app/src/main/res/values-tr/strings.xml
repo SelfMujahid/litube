@@ -5,7 +5,7 @@
     <string name="download">İndir</string>
     <string name="video_quality">Video Kalitesi</string>
     <string name="confirm">Onayla</string>
-    <string name="downloading">İndiriliyor: </string>
+    <string name="downloading">İndiriliyor</string>
     <string name="select_something_first">Önce bir şey seçin</string>
     <string name="retry">Tekrar Dene</string>
     <string name="download_complete">İndirme tamamlandı</string>

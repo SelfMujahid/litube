@@ -6,7 +6,7 @@
     <string name="download">下载</string>
     <string name="video_quality">视频质量</string>
     <string name="confirm">确认</string>
-    <string name="downloading">下载中: </string>
+    <string name="downloading">下载中</string>
     <string name="select_something_first">请先选择</string>
     <string name="retry">重试</string>
     <string name="download_complete">下载完成</string>

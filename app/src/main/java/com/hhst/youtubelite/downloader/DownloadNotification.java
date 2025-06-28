@@ -155,6 +155,50 @@ public class DownloadNotification {
     }
   }
 
+  public void startMuxing(String content) {
+    Intent cancelIntent = new Intent(context, DownloadService.class);
+    cancelIntent.setAction("CANCEL_DOWNLOAD");
+    cancelIntent.putExtra("taskId", notificationId);
+    PendingIntent cancelPendingIntent =
+        PendingIntent.getService(
+            context, notificationId, cancelIntent, PendingIntent.FLAG_IMMUTABLE);
+
+    Intent retryIntent = new Intent(context, DownloadService.class);
+    retryIntent.setAction("RETRY_DOWNLOAD");
+    retryIntent.putExtra("taskId", notificationId);
+    PendingIntent retryPendingIntent =
+        PendingIntent.getService(
+            context, notificationId, retryIntent, PendingIntent.FLAG_IMMUTABLE);
+
+    NotificationCompat.Action cancelAction =
+        new NotificationCompat.Action.Builder(
+                IconCompat.createWithResource(context, R.drawable.ic_cancel),
+                context.getString(R.string.cancel),
+                cancelPendingIntent)
+            .build();
+
+    NotificationCompat.Action retryAction =
+        new NotificationCompat.Action.Builder(
+                IconCompat.createWithResource(context, R.drawable.ic_retry),
+                context.getString(R.string.retry),
+                retryPendingIntent)
+            .build();
+
+    if (builder != null) {
+      builder
+          .setContentTitle(context.getString(R.string.merging))
+          .setOngoing(true)
+          .setContentText(content)
+          .setSubText(context.getString(R.string.merging_audio_video))
+          .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
+          .clearActions()
+          .addAction(cancelAction)
+          .addAction(retryAction)
+          .setProgress(0, 0, true);
+      notificationManager.notify(notificationId, builder.build());
+    }
+  }
+
   public void clearDownload() {
     notificationManager.cancel(notificationId);
   }

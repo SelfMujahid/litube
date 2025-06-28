@@ -31,9 +31,9 @@ public class JavascriptInterface {
   }
 
   @android.webkit.JavascriptInterface
-  public void download(String video_id, String video_data) {
+  public void download(String video_id) {
     new Handler(Looper.getMainLooper())
-        .post(() -> new DownloadDialog(video_id, video_data, context).show());
+        .post(() -> new DownloadDialog(video_id, context).show());
   }
 
   @android.webkit.JavascriptInterface

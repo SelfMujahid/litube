@@ -276,7 +276,7 @@ try {
                                 downloadButton.addEventListener('click', () => {
                                     // opt: fetch video details
                                     const video = document.querySelector("#movie_player");
-                                    android.download(location.href, JSON.stringify(video?.getPlayerResponse()))
+                                    android.download(location.href)
                                 });
                                 saveButton.parentElement.insertBefore(downloadButton, saveButton);
                             }

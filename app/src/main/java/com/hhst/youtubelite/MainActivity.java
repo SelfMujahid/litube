@@ -27,9 +27,6 @@ import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 import com.hhst.youtubelite.downloader.DownloadService;
 import com.hhst.youtubelite.webview.YoutubeWebview;
 import com.tencent.mmkv.MMKV;
-import com.yausername.ffmpeg.FFmpeg;
-import com.yausername.youtubedl_android.YoutubeDL;
-import com.yausername.youtubedl_android.YoutubeDLException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -68,9 +65,9 @@ public class MainActivity extends AppCompatActivity {
 
     swipeRefreshLayout.setColorSchemeResources(R.color.light_blue, R.color.blue, R.color.dark_blue);
     swipeRefreshLayout.setOnRefreshListener(
-        () ->
-            webview.evaluateJavascript(
-                "window.dispatchEvent(new Event('onRefresh'));", value -> {}));
+        () -> webview.evaluateJavascript(
+            "window.dispatchEvent(new Event('onRefresh'));", value -> {
+            }));
     swipeRefreshLayout.setProgressViewOffset(true, 80, 180);
 
     MMKV.initialize(this);
@@ -88,23 +85,24 @@ public class MainActivity extends AppCompatActivity {
                     String type = intent.getType();
 
                     if (Intent.ACTION_SEND.equals(action) && type != null && "text/plain".equals(type)) {
-                        String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
-                        if (sharedText != null && (sharedText.startsWith("http://") || sharedText.startsWith("https://"))) {
-                            Log.d("MainActivity", "Loading shared URL: " + sharedText);
-                            webview.loadUrl(sharedText);
-                        } else {
-                            Log.d("MainActivity", "No valid URL in shared text, loading base URL");
-                            webview.loadUrl(getString(R.string.base_url));
-                        }
+                      String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
+                      if (sharedText != null
+                          && (sharedText.startsWith("http://") || sharedText.startsWith("https://"))) {
+                        Log.d("MainActivity", "Loading shared URL: " + sharedText);
+                        webview.loadUrl(sharedText);
+                      } else {
+                        Log.d("MainActivity", "No valid URL in shared text, loading base URL");
+                        webview.loadUrl(getString(R.string.base_url));
+                      }
                     } else {
-                        Uri intentUri = intent.getData();
-                        if (intentUri != null) {
-                            Log.d("MainActivity", "Loading URL from intent: " + intentUri);
-                            webview.loadUrl(intentUri.toString());
-                        } else {
-                            Log.d("MainActivity", "Loading base URL: " + getString(R.string.base_url));
-                            webview.loadUrl(getString(R.string.base_url));
-                        }
+                      Uri intentUri = intent.getData();
+                      if (intentUri != null) {
+                        Log.d("MainActivity", "Loading URL from intent: " + intentUri);
+                        webview.loadUrl(intentUri.toString());
+                      } else {
+                        Log.d("MainActivity", "Loading base URL: " + getString(R.string.base_url));
+                        webview.loadUrl(getString(R.string.base_url));
+                      }
                     }
                   });
             });
@@ -119,19 +117,19 @@ public class MainActivity extends AppCompatActivity {
 
     // check and require post-notification permission
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-          != PackageManager.PERMISSION_GRANTED) {
+      if (ContextCompat.checkSelfPermission(this,
+          Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
         ActivityCompat.requestPermissions(
-            this, new String[] {Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_CODE);
+            this, new String[] { Manifest.permission.POST_NOTIFICATIONS }, REQUEST_NOTIFICATION_CODE);
       }
     }
 
     // check storage permission
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-      if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-          != PackageManager.PERMISSION_GRANTED) {
+      if (ContextCompat.checkSelfPermission(this,
+          Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
         ActivityCompat.requestPermissions(
-            this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_CODE);
+            this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_STORAGE_CODE);
       }
     }
   }
@@ -142,13 +140,11 @@ public class MainActivity extends AppCompatActivity {
     List<String> resourceDirs = Arrays.asList("css", "js");
     try {
       for (String dir : resourceDirs) {
-        List<String> resources =
-            new ArrayList<>(Arrays.asList(Objects.requireNonNull(assetManager.list(dir))));
+        List<String> resources = new ArrayList<>(Arrays.asList(Objects.requireNonNull(assetManager.list(dir))));
         // inject init.js or init.min.js
-        String initScript =
-            resources.contains("init.js")
-                ? "init.js"
-                : resources.contains("init.min.js") ? "init.min.js" : null;
+        String initScript = resources.contains("init.js")
+            ? "init.js"
+            : resources.contains("init.min.js") ? "init.min.js" : null;
         if (initScript != null) {
           webview.injectJavaScript(assetManager.open(dir + "/" + initScript));
           resources.remove(initScript);
@@ -170,9 +166,11 @@ public class MainActivity extends AppCompatActivity {
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent keyEvent) {
     if (keyCode == android.view.KeyEvent.KEYCODE_BACK) {
-      webview.evaluateJavascript("window.dispatchEvent(new Event('onGoBack'));", value -> {});
+      webview.evaluateJavascript("window.dispatchEvent(new Event('onGoBack'));", value -> {
+      });
       if (webview.fullscreen != null && webview.fullscreen.getVisibility() == View.VISIBLE) {
-        webview.evaluateJavascript("document.exitFullscreen()", value -> {});
+        webview.evaluateJavascript("document.exitFullscreen()", value -> {
+        });
         return true;
       }
       if (webview.canGoBack()) {
@@ -187,16 +185,16 @@ public class MainActivity extends AppCompatActivity {
 
   private void startDownloadService() {
     // bind the download service
-    ServiceConnection connection =
-        new ServiceConnection() {
-          @Override
-          public void onServiceConnected(ComponentName componentName, IBinder binder) {
-            downloadService = ((DownloadService.DownloadBinder) binder).getService();
-          }
+    ServiceConnection connection = new ServiceConnection() {
+      @Override
+      public void onServiceConnected(ComponentName componentName, IBinder binder) {
+        downloadService = ((DownloadService.DownloadBinder) binder).getService();
+      }
 
-          @Override
-          public void onServiceDisconnected(ComponentName componentName) {}
-        };
+      @Override
+      public void onServiceDisconnected(ComponentName componentName) {
+      }
+    };
 
     Intent intent = new Intent(this, DownloadService.class);
     bindService(intent, connection, Context.BIND_AUTO_CREATE);
@@ -204,17 +202,17 @@ public class MainActivity extends AppCompatActivity {
 
   private void startPlaybackService() {
     // bind
-    ServiceConnection connection =
-        new ServiceConnection() {
-          @Override
-          public void onServiceConnected(ComponentName componentName, IBinder binder) {
-            playbackService = ((PlaybackService.PlaybackBinder) binder).getService();
-            playbackService.initialize(webview);
-          }
+    ServiceConnection connection = new ServiceConnection() {
+      @Override
+      public void onServiceConnected(ComponentName componentName, IBinder binder) {
+        playbackService = ((PlaybackService.PlaybackBinder) binder).getService();
+        playbackService.initialize(webview);
+      }
 
-          @Override
-          public void onServiceDisconnected(ComponentName componentName) {}
-        };
+      @Override
+      public void onServiceDisconnected(ComponentName componentName) {
+      }
+    };
     Intent intent = new Intent(this, PlaybackService.class);
     bindService(intent, connection, Context.BIND_AUTO_CREATE);
   }
@@ -230,28 +228,17 @@ public class MainActivity extends AppCompatActivity {
   }
 
   private void initializeDownloader() {
-    Executors.newSingleThreadExecutor()
-        .execute(
-            () -> {
-              // Initialize the downloader
-              try {
-                YoutubeDL.getInstance().init(this);
-                FFmpeg.getInstance().init(this);
-              } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(this, R.string.downloader_initialize_error, Toast.LENGTH_SHORT).show());
-              }
-              // try to update yt-dlp
-              try {
-                YoutubeDL.getInstance().updateYoutubeDL(this, YoutubeDL.UpdateChannel._STABLE);
-              } catch (YoutubeDLException e) {
-                Log.e("unable to update yt-dlp", Log.getStackTraceString(e));
-              }
-            });
+    // NewPipeExtractor doesn't require initialization
+    // The downloader is ready to use
   }
 
   public void shareLink(String url) {
     Intent intent = new Intent(Intent.ACTION_VIEW);
     intent.setData(Uri.parse(url));
     startActivity(intent);
+  }
+
+  public DownloadService getDownloadService() {
+    return downloadService;
   }
 }
