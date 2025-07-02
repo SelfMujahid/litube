@@ -64,7 +64,6 @@ android {
         annotationProcessor(libs.lombok)
         implementation(libs.newpipeextractor)
         implementation(libs.okhttp)
-        implementation(libs.mmkv)
         implementation(libs.gson)
         implementation(libs.commons.io)
         implementation(libs.picasso)

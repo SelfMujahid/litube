@@ -19,14 +19,13 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 
 public class DownloadService extends Service {
 
   public final int max_download_tasks = 5;
-  private final Handler notificationHandler = new Handler(Looper.getMainLooper());
   private ConcurrentHashMap<Integer, DownloadTask> download_tasks;
   private ExecutorService download_executor;
 
@@ -50,10 +49,9 @@ public class DownloadService extends Service {
     } else if ("DOWNLOAD_THUMBNAIL".equals(action)) {
       String url = intent.getStringExtra("thumbnail");
       String filename = intent.getStringExtra("filename");
-      File outputDir =
-          new File(
-              Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-              getString(R.string.app_name));
+      File outputDir = new File(
+          Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+          getString(R.string.app_name));
       File outputFile = new File(outputDir, filename + ".jpg");
       downloadThumbnail(url, outputFile);
     }
@@ -79,7 +77,7 @@ public class DownloadService extends Service {
               FileUtils.copyURLToFile(new URL(thumbnail), outputFile);
               // notify to scan
               MediaScannerConnection.scanFile(
-                  this, new String[] {outputFile.getAbsolutePath()}, null, null);
+                  this, new String[] { outputFile.getAbsolutePath() }, null, null);
               showToast(getString(R.string.thumbnail_has_been_saved_to) + outputFile);
             } catch (Exception e) {
               Log.e(getString(R.string.failed_to_download_thumbnail), Log.getStackTraceString(e));
@@ -90,106 +88,90 @@ public class DownloadService extends Service {
   }
 
   private void executeDownload(DownloadTask task) {
-    String fileName =
-        task.getIsAudio()
-            ? String.format("(audio only) %s", task.getFileName())
-            : task.getFileName();
+    String fileName = task.getIsAudio()
+        ? String.format("(audio only) %s", task.getFileName())
+        : task.getFileName();
     int taskId = download_tasks.size();
     DownloadNotification notification = new DownloadNotification(this, taskId);
 
     // Show initial notification with better content
-    String initialContent =
-        task.getIsAudio()
-            ? getString(R.string.downloading_audio) + ": " + fileName
-            : getString(R.string.downloading_video) + ": " + fileName;
+    String initialContent = task.getIsAudio()
+        ? getString(R.string.downloading_audio) + ": " + fileName
+        : getString(R.string.downloading_video) + ": " + fileName;
 
-    notificationHandler.post(
-        () -> startForeground(taskId, notification.showNotification(initialContent, 0)));
+    startForeground(taskId, notification.showNotification(initialContent, 0));
 
     task.setNotification(notification);
     download_tasks.put(taskId, task);
 
     CompletableFuture.runAsync(
-            () -> {
-              try {
-                // Create output file
-                File output =
-                    new File(
-                        task.getOutputDir(),
-                        task.getFileName() + (task.getIsAudio() ? ".m4a" : ".mp4"));
-                task.setOutput(output);
+        () -> {
+          try {
+            // Create output file
+            File output = new File(
+                task.getOutputDir(),
+                task.getFileName() + (task.getIsAudio() ? ".m4a" : ".mp4"));
+            task.setOutput(output);
+            AtomicLong lastProgress = new AtomicLong(0);
+            AtomicLong lastTimestamp = new AtomicLong(System.currentTimeMillis());
+            // Download using NewPipeExtractor-based YoutubeDownloader
+            YoutubeDownloader.download(
+                "download_task" + taskId,
+                task.getVideoStream(),
+                task.getAudioStream(),
+                output,
+                (download, total, percentage, information) -> {
+                  int progress = (int) Math.round(percentage);
+                  if (progress == -1) {
+                    task.setState(DownloaderState.MUXING);
+                    notification.startMuxing(initialContent);
+                  } else {
+                    task.setState(DownloaderState.DOWNLOADING);
+                    if (Math.abs(progress - lastProgress.get()) > 10
+                        || ((System.currentTimeMillis() - lastTimestamp.get()) > 2000)
+                            && Math.abs(progress - lastProgress.get()) > 1) {
+                      notification.updateProgress(progress, information);
+                      lastProgress.set(progress);
+                    }
+                  }
+                },
+                this);
 
-                final AtomicInteger lastProgress = new AtomicInteger(0);
+            showToast(
+                String.format(
+                    getString(R.string.download_finished), fileName, output.getPath()));
+            // notify to scan
+            MediaScannerConnection.scanFile(
+                this, new String[] { output.getAbsolutePath() }, null, null);
 
-                // Download using NewPipeExtractor-based YoutubeDownloader
-                YoutubeDownloader.download(
-                    "download_task" + taskId,
-                    task.getVideoStream(),
-                    task.getAudioStream(),
-                    output,
-                    (download, total, percentage, information) -> {
-                      // Update progress based on the information type
-                      if (information.equals(getString(R.string.merging))) {
-                        task.setState(DownloaderState.MUXING);
-                        notificationHandler.post(
-                            () -> {
-                              notification.clearDownload();
-                              notification.startMuxing(initialContent);
-                            });
-                      } else {
-                        // This is a download progress update
-                        int progress = (int) Math.round(percentage);
+            notification.completeDownload(
+                String.format(
+                    getString(R.string.download_finished), fileName, output.getPath()),
+                output,
+                task.getIsAudio() ? "audio/*" : "video/*");
 
-                        if ((progress - lastProgress.get()) > 1 || progress == 100) {
-                          notificationHandler.post(
-                                  () -> notification.updateProgress(progress, information));
-                        }
-                        if (progress == 100) {
-                          lastProgress.set(0);
-                        } else {
-                          lastProgress.set(progress);
-                        }
-                      }
-                    },
-                    this);
-
-                showToast(
-                    String.format(
-                        getString(R.string.download_finished), fileName, output.getPath()));
-                // notify to scan
-                MediaScannerConnection.scanFile(
-                    this, new String[] {output.getAbsolutePath()}, null, null);
-
-                notificationHandler.post(
-                    () ->
-                        notification.completeDownload(
-                            String.format(
-                                getString(R.string.download_finished), fileName, output.getPath()),
-                            output,
-                            task.getIsAudio() ? "audio/*" : "video/*"));
-
-                // Delete temporary files if any
-                deleteTempFiles(output);
-                task.setState(DownloaderState.FINISHED);
-              } catch (IOException e) {
-                Log.e(getString(R.string.failed_to_download), Log.getStackTraceString(e));
-                String errorMessage = e.getMessage();
-                if (errorMessage != null && errorMessage.contains("cancelled")) {
-                  showToast(getString(R.string.download_canceled));
-                  task.getNotification().cancelDownload(getString(R.string.download_canceled));
-                } else {
-                  showToast(getString(R.string.failed_to_download));
-                  task.getNotification().cancelDownload(getString(R.string.failed_to_download));
-                }
-                task.setState(DownloaderState.STOPPED);
-              } catch (InterruptedException e) {
-                Log.e(getString(R.string.failed_to_download), Log.getStackTraceString(e));
-                showToast(getString(R.string.download_canceled));
-                task.getNotification().cancelDownload(getString(R.string.download_canceled));
-                task.setState(DownloaderState.STOPPED);
-              }
-            },
-            download_executor)
+            // Delete temporary files if any
+            deleteTempFiles(output);
+            task.setState(DownloaderState.FINISHED);
+          } catch (IOException e) {
+            Log.e(getString(R.string.failed_to_download), Log.getStackTraceString(e));
+            String errorMessage = e.getMessage();
+            if (errorMessage != null && errorMessage.contains("cancelled")) {
+              showToast(getString(R.string.download_canceled));
+              task.getNotification().cancelDownload("");
+            } else {
+              showToast(getString(R.string.failed_to_download));
+              task.getNotification().cancelDownload("");
+            }
+            task.setState(DownloaderState.STOPPED);
+          } catch (InterruptedException e) {
+            Log.e(getString(R.string.failed_to_download), Log.getStackTraceString(e));
+            showToast(getString(R.string.download_canceled));
+            task.getNotification().cancelDownload("");
+            task.setState(DownloaderState.STOPPED);
+          }
+        },
+        download_executor)
         .thenRun(() -> stopForeground(true));
   }
 
@@ -197,10 +179,9 @@ public class DownloadService extends Service {
     download_executor.submit(
         () -> {
           // check and create output directory
-          File outputDir =
-              new File(
-                  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                  getString(R.string.app_name));
+          File outputDir = new File(
+              Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+              getString(R.string.app_name));
           if (!outputDir.exists()) {
             boolean ignored = outputDir.mkdirs();
           }
@@ -224,7 +205,6 @@ public class DownloadService extends Service {
 
       // Delete temporary files if any
       deleteTempFiles(task.getOutput());
-      download_tasks.remove(taskId);
     }
   }
 
@@ -260,7 +240,6 @@ public class DownloadService extends Service {
       }
       // Delete temporary files if any
       deleteTempFiles(task.getOutput());
-      download_tasks.remove(taskId);
     }
   }
 

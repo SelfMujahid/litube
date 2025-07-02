@@ -28,6 +28,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import org.schabi.newpipe.extractor.stream.AudioStream;
 import org.schabi.newpipe.extractor.stream.VideoStream;
 
@@ -45,24 +46,27 @@ public class DownloadDialog {
     this.context = context;
     executor = Executors.newCachedThreadPool();
     detailsLatch = new CountDownLatch(1);
+    Consumer<Exception> errHandler =
+        e -> {
+          // avoid some unnecessary toast
+          if (e instanceof InterruptedIOException) return;
+          Log.e(
+              context.getString(R.string.failed_to_load_video_details), Log.getStackTraceString(e));
+          new Handler(Looper.getMainLooper())
+              .post(
+                  () ->
+                      Toast.makeText(
+                              context, R.string.failed_to_load_video_details, Toast.LENGTH_SHORT)
+                          .show());
+        };
     executor.submit(
         () -> {
           try {
             // try to get details from cache
-            details = YoutubeDownloader.infoWithCache(url);
+            details = YoutubeDownloader.info(url);
             detailsLatch.countDown();
           } catch (Exception e) {
-            // avoid some unnecessary toast
-            if (e instanceof InterruptedIOException) return;
-            Log.e(
-                context.getString(R.string.failed_to_load_video_details),
-                Log.getStackTraceString(e));
-            new Handler(Looper.getMainLooper())
-                .post(
-                    () ->
-                        Toast.makeText(
-                                context, R.string.failed_to_load_video_details, Toast.LENGTH_SHORT)
-                            .show());
+            errHandler.accept(e);
           }
         });
   }

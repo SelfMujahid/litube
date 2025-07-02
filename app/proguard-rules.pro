@@ -43,10 +43,13 @@
 -dontwarn org.joda.time.format.DateTimeFormat
 -dontwarn org.joda.time.format.DateTimeFormatter
 -dontwarn springfox.documentation.spring.web.json.Json
+-dontwarn java.beans.BeanDescriptor
+-dontwarn java.beans.BeanInfo
+-dontwarn java.beans.IntrospectionException
+-dontwarn java.beans.Introspector
+-dontwarn java.beans.PropertyDescriptor
 
 -dontobfuscate
--keep class com.yausername.** { *; }
--keep class org.apache.commons.compress.archivers.zip.** { *; }
 -keepclassmembers class com.hhst.youtubelite.downloader.DownloadDetails { *; }
 
 -dontwarn okio.**

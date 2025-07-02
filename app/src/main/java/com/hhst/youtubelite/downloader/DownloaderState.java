@@ -4,5 +4,6 @@ public enum DownloaderState {
   RUNNING,
   STOPPED,
   FINISHED,
-  MUXING
+  MUXING,
+  DOWNLOADING
 }

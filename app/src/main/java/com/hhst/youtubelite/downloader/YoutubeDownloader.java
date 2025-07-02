@@ -1,17 +1,13 @@
 package com.hhst.youtubelite.downloader;
 
 import android.content.Context;
-import com.google.gson.Gson;
 import com.hhst.youtubelite.R;
-import com.tencent.mmkv.MMKV;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.schabi.newpipe.extractor.exceptions.ExtractionException;
@@ -21,8 +17,6 @@ import org.schabi.newpipe.extractor.stream.VideoStream;
 /* the main class for download video and audio */
 public class YoutubeDownloader {
 
-  private static final MMKV cache = MMKV.defaultMMKV();
-  private static final Gson gson = new Gson();
   private static final Map<String, UniversalDownloader> instances = new HashMap<>();
   private static final List<File> tempFiles = new ArrayList<>();
 
@@ -44,38 +38,12 @@ public class YoutubeDownloader {
         extractor.getBestAudioStream(info));
   }
 
-  private static String getVideoID(String url) {
-    if (url == null || url.isEmpty()) {
-      throw new RuntimeException("Invalid url");
-    }
-    // get video id from url
-    Pattern pattern =
-        Pattern.compile(
-            "^https?://.*(?:youtu\\.be/|v/|u/\\w/|embed/|watch\\?v=)([^#&?]*).*$",
-            Pattern.CASE_INSENSITIVE);
-    Matcher matcher = pattern.matcher(url);
-    if (matcher.matches()) {
-      String id = matcher.group(1);
-      if (id == null) throw new RuntimeException("Invalid url");
-      return id;
-    }
-    throw new RuntimeException("Invalid url");
-  }
-
-  public static DownloadDetails infoWithCache(String url) throws Exception {
-    String id = getVideoID(url);
-    DownloadDetails details = gson.fromJson(cache.decodeString(id), DownloadDetails.class);
-    if (details == null) {
-      details = info("https://www.youtube.com/watch?v=" + id);
-      cache.encode(id, gson.toJson(details), 60 * 60 * 24);
-    }
-    return details;
-  }
-
   /**
-   * @param processId a unique identifier for the download process, used to cancel the download
-   * @param output the file to save the video and audio, not the directory
-   * @param context the context to get the string resources for progress messages
+   * @param processId a unique identifier for the download process, used to cancel
+   *                  the download
+   * @param output    the file to save the video and audio, not the directory
+   * @param context   the context to get the string resources for progress
+   *                  messages
    */
   public static void download(
       String processId,
@@ -110,12 +78,12 @@ public class YoutubeDownloader {
               callback,
               context.getString(R.string.downloading_audio)));
     } finally {
-      downloader.shutdown();
+      // downloader.shutdown();
     }
 
     if (videoStream != null) {
       // Merge the video and audio files
-      callback.onProgress(0, 0, 100, context.getString(R.string.merging));
+      callback.onProgress(-1, -1, -1, context.getString(R.string.merging));
       MediaMuxer.merge(videoFile, audioFile, output);
     } else {
       // Move audio file to output
