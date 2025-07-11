@@ -224,10 +224,6 @@ public class DownloadDialog {
             downloadTask.setVideoStream(isVideoSelected.get() ? selectedVideoStream.get() : null);
             downloadTask.setAudioStream(details.getAudioStream());
             downloadTask.setIsAudio(isAudioSelected.get());
-            downloadTask.setState(DownloaderState.RUNNING);
-            downloadTask.setOutputDir(null);
-            downloadTask.setOutput(null);
-            downloadTask.setNotification(null);
 
             // Start download service
             context.startService(downloadIntent);

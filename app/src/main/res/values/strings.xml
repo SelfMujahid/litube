@@ -9,14 +9,12 @@
     <string name="confirm">Confirm</string>
     <string name="downloading">"Downloading"</string>
     <string name="select_something_first">Select something first</string>
-    <string name="retry">Retry</string>
     <string name="download_complete">Download complete</string>
-    <string name="download_canceled">Download canceled</string>
+    <string name="download_canceled">Download cancelled</string>
     <string name="thumbnail_has_been_saved_to">Thumbnail has been saved to: </string>
     <string name="download_finished">Download finished:  \"%s\" has been saved to \"%s\"</string>
-    <string name="retry_download">"Retry Download "</string>
     <string name="failed_to_download">Failed to download</string>
-    <string name="download_canceled_err">Download Canceled Err: because has already completed normally or has already finished with an error</string>
+    <string name="download_canceled_err">Download Cancelled Err: because has already completed normally or has already finished with an error</string>
     <string name="failed_to_download_thumbnail">"Failed to download thumbnail "</string>
     <string name="failed_to_load_image">"Failed to load image "</string>
     <string name="failed_to_load_video_details">"Failed to load video details "</string>

@@ -1,4 +1,4 @@
-package com.hhst.youtubelite.downloader;
+package com.hhst.youtubelite.common;
 
 import androidx.annotation.Nullable;
 import java.io.IOException;

@@ -32,9 +32,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.Executors;
-import org.apache.commons.io.FilenameUtils;
-
 import lombok.Getter;
+import org.apache.commons.io.FilenameUtils;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -109,7 +108,6 @@ public class MainActivity extends AppCompatActivity {
     requestPermissions();
     startDownloadService();
     startPlaybackService();
-    initializeDownloader();
   }
 
   public void requestPermissions() {
@@ -224,11 +222,6 @@ public class MainActivity extends AppCompatActivity {
     if (uri != null && webview != null) {
       webview.loadUrl(uri.toString());
     }
-  }
-
-  private void initializeDownloader() {
-    // NewPipeExtractor doesn't require initialization
-    // The downloader is ready to use
   }
 
   public void shareLink(String url) {

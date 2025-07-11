@@ -23,10 +23,12 @@ public class DownloadNotification {
   public DownloadNotification(Context context, int notificationId) {
     this.context = context;
     this.notificationId = notificationId;
-    this.notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+    this.notificationManager =
+        (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
 
-    NotificationChannel channel = new NotificationChannel(
-        CHANNEL_ID, "Download Channel", NotificationManager.IMPORTANCE_HIGH);
+    NotificationChannel channel =
+        new NotificationChannel(
+            CHANNEL_ID, "Download Channel", NotificationManager.IMPORTANCE_HIGH);
     channel.setDescription("Channel for download notifications");
     notificationManager.createNotificationChannel(channel);
   }
@@ -35,38 +37,28 @@ public class DownloadNotification {
     Intent cancelIntent = new Intent(context, DownloadService.class);
     cancelIntent.setAction("CANCEL_DOWNLOAD");
     cancelIntent.putExtra("taskId", notificationId);
-    PendingIntent cancelPendingIntent = PendingIntent.getService(
-        context, notificationId, cancelIntent, PendingIntent.FLAG_IMMUTABLE);
+    PendingIntent cancelPendingIntent =
+        PendingIntent.getService(
+            context, notificationId, cancelIntent, PendingIntent.FLAG_IMMUTABLE);
 
-    Intent retryIntent = new Intent(context, DownloadService.class);
-    retryIntent.setAction("RETRY_DOWNLOAD");
-    retryIntent.putExtra("taskId", notificationId);
-    PendingIntent retryPendingIntent = PendingIntent.getService(
-        context, notificationId, retryIntent, PendingIntent.FLAG_IMMUTABLE);
+    NotificationCompat.Action cancelAction =
+        new NotificationCompat.Action.Builder(
+                IconCompat.createWithResource(context, R.drawable.ic_cancel),
+                context.getString(R.string.cancel),
+                cancelPendingIntent)
+            .build();
 
-    NotificationCompat.Action cancelAction = new NotificationCompat.Action.Builder(
-        IconCompat.createWithResource(context, R.drawable.ic_cancel),
-        context.getString(R.string.cancel),
-        cancelPendingIntent)
-        .build();
-
-    NotificationCompat.Action retryAction = new NotificationCompat.Action.Builder(
-        IconCompat.createWithResource(context, R.drawable.ic_retry),
-        context.getString(R.string.retry),
-        retryPendingIntent)
-        .build();
-
-    builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-        .setContentTitle(context.getString(R.string.downloading))
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
-        .setContentText(content)
-        .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-        .setPriority(NotificationCompat.PRIORITY_HIGH)
-        .setOnlyAlertOnce(true)
-        .setOngoing(true)
-        .addAction(cancelAction)
-        .addAction(retryAction)
-        .setProgress(100, progress, false);
+    builder =
+        new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setContentTitle(context.getString(R.string.downloading))
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setContentText(content)
+            .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
+            .setPriority(NotificationCompat.PRIORITY_HIGH)
+            .setOnlyAlertOnce(true)
+            .setOngoing(true)
+            .addAction(cancelAction)
+            .setProgress(100, progress, false);
 
     var notification = builder.build();
     notificationManager.notify(notificationId, notification);
@@ -90,25 +82,29 @@ public class DownloadNotification {
     intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 
-    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
+    PendingIntent pendingIntent =
+        PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE);
 
     Intent deleteIntent = new Intent(context, DownloadService.class);
     deleteIntent.setAction("DELETE_DOWNLOAD");
     deleteIntent.putExtra("taskId", notificationId);
-    PendingIntent deletePendingIntent = PendingIntent.getService(
-        context, notificationId, deleteIntent, PendingIntent.FLAG_IMMUTABLE);
+    PendingIntent deletePendingIntent =
+        PendingIntent.getService(
+            context, notificationId, deleteIntent, PendingIntent.FLAG_IMMUTABLE);
 
-    NotificationCompat.Action deleteAction = new NotificationCompat.Action.Builder(
-        IconCompat.createWithResource(context, R.drawable.ic_delete),
-        context.getString(R.string.delete),
-        deletePendingIntent)
-        .build();
+    NotificationCompat.Action deleteAction =
+        new NotificationCompat.Action.Builder(
+                IconCompat.createWithResource(context, R.drawable.ic_delete),
+                context.getString(R.string.delete),
+                deletePendingIntent)
+            .build();
 
     if (builder != null) {
       builder
           .setContentTitle(context.getString(R.string.download_complete))
           .setOngoing(false)
           .setContentText(content)
+          .setSubText(null)
           .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
           .setContentIntent(pendingIntent)
           .clearActions()
@@ -121,63 +117,23 @@ public class DownloadNotification {
 
   public void cancelDownload(String content) {
     if (builder != null) {
-      Intent retryIntent = new Intent(context, DownloadService.class);
-      retryIntent.setAction("RETRY_DOWNLOAD");
-      retryIntent.putExtra("taskId", notificationId);
-      PendingIntent retryPendingIntent = PendingIntent.getService(
-          context, notificationId, retryIntent, PendingIntent.FLAG_IMMUTABLE);
-
-      NotificationCompat.Action retryAction = new NotificationCompat.Action.Builder(
-          IconCompat.createWithResource(context, R.drawable.ic_retry),
-          context.getString(R.string.retry),
-          retryPendingIntent)
-          .build();
-
       builder
-          .setContentTitle(context.getString(R.string.download_canceled) + content)
+          .setContentTitle(context.getString(R.string.download_canceled))
+          .setSubText(content)
           .setOngoing(false)
           .clearActions()
-          .setProgress(0, 0, false)
-          .addAction(retryAction);
+          .setProgress(0, 0, false);
       notificationManager.notify(notificationId, builder.build());
     }
   }
 
   public void startMuxing(String content) {
-    Intent cancelIntent = new Intent(context, DownloadService.class);
-    cancelIntent.setAction("CANCEL_DOWNLOAD");
-    cancelIntent.putExtra("taskId", notificationId);
-    PendingIntent cancelPendingIntent = PendingIntent.getService(
-        context, notificationId, cancelIntent, PendingIntent.FLAG_IMMUTABLE);
-
-    Intent retryIntent = new Intent(context, DownloadService.class);
-    retryIntent.setAction("RETRY_DOWNLOAD");
-    retryIntent.putExtra("taskId", notificationId);
-    PendingIntent retryPendingIntent = PendingIntent.getService(
-        context, notificationId, retryIntent, PendingIntent.FLAG_IMMUTABLE);
-
-    NotificationCompat.Action cancelAction = new NotificationCompat.Action.Builder(
-        IconCompat.createWithResource(context, R.drawable.ic_cancel),
-        context.getString(R.string.cancel),
-        cancelPendingIntent)
-        .build();
-
-    NotificationCompat.Action retryAction = new NotificationCompat.Action.Builder(
-        IconCompat.createWithResource(context, R.drawable.ic_retry),
-        context.getString(R.string.retry),
-        retryPendingIntent)
-        .build();
-
     if (builder != null) {
       builder
           .setContentTitle(context.getString(R.string.merging))
-          .setOngoing(true)
           .setContentText(content)
           .setSubText(context.getString(R.string.merging_audio_video))
           .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
-          .clearActions()
-          .addAction(cancelAction)
-          .addAction(retryAction)
           .setProgress(0, 0, true);
       notificationManager.notify(notificationId, builder.build());
     }

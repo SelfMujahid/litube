@@ -288,6 +288,12 @@ public class PlaybackService extends Service {
   }
 
   @Override
+  public void onTaskRemoved(Intent rootIntent) {
+    super.onTaskRemoved(rootIntent);
+    stopSelf();
+  }
+
+  @Override
   public void onDestroy() {
     super.onDestroy();
     stopForeground(Service.STOP_FOREGROUND_REMOVE);
