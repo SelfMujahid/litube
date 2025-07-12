@@ -2,14 +2,12 @@ package com.hhst.youtubelite.downloader;
 
 import android.content.Context;
 import com.hhst.youtubelite.R;
-import com.hhst.youtubelite.common.YoutubeExtractor;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.FilenameUtils;
-import org.schabi.newpipe.extractor.exceptions.ExtractionException;
 import org.schabi.newpipe.extractor.stream.AudioStream;
 import org.schabi.newpipe.extractor.stream.VideoStream;
 
@@ -20,24 +18,6 @@ public class YoutubeDownloader {
 
   // Flag whether the task is cancelled
   private static final Map<String, Boolean> cancelledTasks = new ConcurrentHashMap<>();
-
-  /**
-   * @param video_url not the video id but the whole url
-   * @return DownloadDetails contains everything we need
-   */
-  public static DownloadDetails info(String video_url) throws ExtractionException, IOException {
-    var extractor = new YoutubeExtractor();
-    var info = extractor.extract(video_url);
-    return new DownloadDetails(
-        info.getId(),
-        info.getName(),
-        info.getUploaderName(),
-        info.getDescription().getContent(),
-        info.getDuration(),
-        extractor.getBestThumbnail(info),
-        extractor.getVideoOnlyStreams(info),
-        extractor.getBestAudioStream(info));
-  }
 
   public static void download(
       String tag,

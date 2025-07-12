@@ -254,6 +254,10 @@ public class PlaybackService extends Service {
         });
   }
 
+  public void hideNotification() {
+    stopForeground(true);
+  }
+
   public void updateProgress(long pos, float playbackSpeed, boolean isPlaying) {
     // disable update while seeking
     if (isSeeking) return;
@@ -290,14 +294,14 @@ public class PlaybackService extends Service {
   @Override
   public void onTaskRemoved(Intent rootIntent) {
     super.onTaskRemoved(rootIntent);
+    stopForeground(true);
     stopSelf();
   }
 
   @Override
   public void onDestroy() {
     super.onDestroy();
-    stopForeground(Service.STOP_FOREGROUND_REMOVE);
-    if (notificationManager != null) notificationManager.cancelAll();
+    stopForeground(true);
     if (mediaSession != null) {
       mediaSession.release();
       mediaSession = null;

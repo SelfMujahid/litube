@@ -19,7 +19,6 @@ public class DownloadTask implements Cloneable {
   private AudioStream audioStream;
   private Boolean isAudio;
   private DownloaderState state;
-  private File outputDir;
   private File output;
   private DownloadNotification notification;
 

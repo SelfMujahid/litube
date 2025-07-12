@@ -1,6 +1,8 @@
 package com.hhst.youtubelite;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
+import android.app.PictureInPictureParams;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,9 +14,12 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.util.Rational;
 import android.view.KeyEvent;
+import android.view.SurfaceView;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -23,17 +28,24 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+import com.hhst.youtubelite.common.YoutubeExtractor;
 import com.hhst.youtubelite.downloader.DownloadService;
+import com.hhst.youtubelite.player.VideoPlayerController;
+import com.hhst.youtubelite.player.VideoPlayerControllerImpl;
 import com.hhst.youtubelite.webview.YoutubeWebview;
+import com.tencent.mmkv.MMKV;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.concurrent.Executors;
 import lombok.Getter;
 import org.apache.commons.io.FilenameUtils;
+import org.schabi.newpipe.extractor.exceptions.ExtractionException;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -44,6 +56,12 @@ public class MainActivity extends AppCompatActivity {
   public ProgressBar progressBar;
   @Getter public DownloadService downloadService;
   public PlaybackService playbackService;
+
+  // Pip mode related fields
+  private SurfaceView playerView;
+  private VideoPlayerController videoController;
+  private ServiceConnection playbackServiceConnection;
+  private ServiceConnection downloadServiceConnection;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -81,6 +99,7 @@ public class MainActivity extends AppCompatActivity {
                     String action = intent.getAction();
                     String type = intent.getType();
 
+                    String baseUrl = "https://m.youtube.com";
                     if (Intent.ACTION_SEND.equals(action) && "text/plain".equals(type)) {
                       String sharedText = intent.getStringExtra(Intent.EXTRA_TEXT);
                       if (sharedText != null
@@ -89,8 +108,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("MainActivity", "Loading shared URL: " + sharedText);
                         webview.loadUrl(sharedText);
                       } else {
-                        Log.d("MainActivity", "No valid URL in shared text, loading base URL");
-                        webview.loadUrl(getString(R.string.base_url));
+                        webview.loadUrl(baseUrl);
                       }
                     } else {
                       Uri intentUri = intent.getData();
@@ -98,8 +116,7 @@ public class MainActivity extends AppCompatActivity {
                         Log.d("MainActivity", "Loading URL from intent: " + intentUri);
                         webview.loadUrl(intentUri.toString());
                       } else {
-                        Log.d("MainActivity", "Loading base URL: " + getString(R.string.base_url));
-                        webview.loadUrl(getString(R.string.base_url));
+                        webview.loadUrl(baseUrl);
                       }
                     }
                   });
@@ -108,6 +125,8 @@ public class MainActivity extends AppCompatActivity {
     requestPermissions();
     startDownloadService();
     startPlaybackService();
+    initializePlayer();
+    MMKV.initialize(this);
   }
 
   public void requestPermissions() {
@@ -182,7 +201,7 @@ public class MainActivity extends AppCompatActivity {
 
   private void startDownloadService() {
     // bind the download service
-    ServiceConnection connection =
+    downloadServiceConnection =
         new ServiceConnection() {
           @Override
           public void onServiceConnected(ComponentName componentName, IBinder binder) {
@@ -194,12 +213,12 @@ public class MainActivity extends AppCompatActivity {
         };
 
     Intent intent = new Intent(this, DownloadService.class);
-    bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    bindService(intent, downloadServiceConnection, Context.BIND_AUTO_CREATE);
   }
 
   private void startPlaybackService() {
     // bind
-    ServiceConnection connection =
+    playbackServiceConnection =
         new ServiceConnection() {
           @Override
           public void onServiceConnected(ComponentName componentName, IBinder binder) {
@@ -211,7 +230,7 @@ public class MainActivity extends AppCompatActivity {
           public void onServiceDisconnected(ComponentName componentName) {}
         };
     Intent intent = new Intent(this, PlaybackService.class);
-    bindService(intent, connection, Context.BIND_AUTO_CREATE);
+    bindService(intent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
   }
 
   @Override
@@ -228,5 +247,153 @@ public class MainActivity extends AppCompatActivity {
     Intent intent = new Intent(Intent.ACTION_VIEW);
     intent.setData(Uri.parse(url));
     startActivity(intent);
+  }
+
+  /**
+   * Initialize the video player component with surface view and set up listeners for playback state
+   * changes and picture-in-picture mode
+   */
+  @SuppressLint("InflateParams")
+  private void initializePlayer() {
+    playerView = findViewById(R.id.video_surface);
+    videoController = new VideoPlayerControllerImpl();
+    videoController.initialize(this, playerView);
+    // Set playback state listener
+    videoController.setPlaybackStateListener(
+        new VideoPlayerController.PlaybackStateListener() {
+          @Override
+          public void onPlaybackStateChanged(boolean isPlaying) {
+            if (isPlaying) {
+              webview.evaluateJavascript("window.dispatchEvent(new Event('play'));", null);
+            } else {
+              webview.evaluateJavascript("window.dispatchEvent(new Event('pause'));", null);
+            }
+          }
+
+          @Override
+          public void onProgressChanged(int position, int duration) {
+            long seekSeconds = Math.round(position / 1000f);
+            webview.evaluateJavascript(
+                String.format(
+                    Locale.getDefault(),
+                    "window.dispatchEvent(new CustomEvent('seek', { detail: { time: %d } }));",
+                    seekSeconds),
+                null);
+          }
+
+          @Override
+          public void onPlaybackCompleted() {
+            Log.d("MainActivity", "Playback completed");
+          }
+
+          @Override
+          public void onPlaybackError(String error) {
+            Toast.makeText(MainActivity.this, "Playback error: " + error, Toast.LENGTH_LONG).show();
+          }
+        });
+  }
+
+  /** Enter PiP mode with only the video player visible */
+  private void enterPipMode() {
+    if (!webview.isWatchPage()) return;
+    Rational aspectRatio = new Rational(16, 9);
+    var builder = new PictureInPictureParams.Builder().setAspectRatio(aspectRatio);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+      builder.setSeamlessResizeEnabled(true);
+    }
+    enterPictureInPictureMode(builder.build());
+  }
+
+  /** Show only the video player (for PiP) */
+  private void showPlayerOnly() {
+    if (playerView != null) playerView.setVisibility(View.VISIBLE);
+    if (webview != null) webview.setVisibility(View.GONE);
+    if (swipeRefreshLayout != null) swipeRefreshLayout.setVisibility(View.GONE);
+    if (progressBar != null) progressBar.setVisibility(View.GONE);
+  }
+
+  /** Hide the video player when not in PiP */
+  private void hidePlayer() {
+    if (playerView != null) playerView.setVisibility(View.GONE);
+    if (webview != null) webview.setVisibility(View.VISIBLE);
+    if (swipeRefreshLayout != null) swipeRefreshLayout.setVisibility(View.VISIBLE);
+    if (progressBar != null) progressBar.setVisibility(View.VISIBLE);
+  }
+
+  /**
+   * Set play or pause state
+   *
+   * @param isPlaying Whether the video is currently playing
+   */
+  public void setVideoPlayState(boolean isPlaying) {
+    if (videoController != null) {
+      if (isPlaying) videoController.getPlaybackControl().play();
+      else videoController.getPlaybackControl().pause();
+    }
+  }
+
+  /**
+   * Seek to specific time position
+   *
+   * @param position Time position in milliseconds
+   */
+  public void seekToPosition(long position) {
+    if (videoController != null) {
+      videoController.getPlaybackControl().seekTo(position);
+    }
+  }
+
+  /**
+   * Called when the user is navigating away from the app Automatically enters picture-in-picture
+   * mode
+   */
+  @Override
+  protected void onUserLeaveHint() {
+    super.onUserLeaveHint();
+    enterPipMode();
+  }
+
+  /**
+   * Called when picture-in-picture mode changes Adjusts UI visibility based on PiP state
+   *
+   * @param isInPictureInPictureMode True if the activity is in picture-in-picture mode
+   */
+  @Override
+  public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode) {
+    super.onPictureInPictureModeChanged(isInPictureInPictureMode);
+    if (isInPictureInPictureMode) {
+      String url = webview.getUrl();
+      Executors.newSingleThreadExecutor()
+          .execute(
+              () -> {
+                try {
+                  var details = YoutubeExtractor.info(url);
+                  if (details == null) {
+                    throw new ExtractionException("Video details is null");
+                  }
+                  runOnUiThread(
+                      () ->
+                          videoController
+                              .getVideoSourceControl()
+                              .setVideoUrl(details.getVideoStreams().get(0).getContent()));
+                } catch (ExtractionException | IOException e) {
+                  runOnUiThread(
+                      () ->
+                          Toast.makeText(
+                                  this, R.string.failed_to_load_video_details, Toast.LENGTH_SHORT)
+                              .show());
+                }
+              });
+      showPlayerOnly();
+    } else {
+      hidePlayer();
+    }
+  }
+
+  @Override
+  protected void onDestroy() {
+    super.onDestroy();
+    unbindService(downloadServiceConnection);
+    unbindService(playbackServiceConnection);
   }
 }

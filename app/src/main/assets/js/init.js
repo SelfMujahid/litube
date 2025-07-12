@@ -79,6 +79,27 @@ try {
 
         window.addEventListener('onProgressChangeFinish', observeVideoId);
 
+        window.addEventListener('onVideoIdChange', () => {
+            if (getPageClass(location.href) === 'watch') {
+                android.infoVideoDetails(location.href)
+            }
+        });
+
+        // Observe page type changes and dispatch event
+        const observePageClass = () => {
+            const currentPageClass = getPageClass(location.href);
+            if (currentPageClass && window.pageClass !== currentPageClass) {
+                window.pageClass = currentPageClass;
+                window.dispatchEvent(new Event('onPageClassChange'));
+            }
+        };
+
+        window.addEventListener('onProgressChangeFinish', observePageClass);
+
+        window.addEventListener('onPageClassChange', () => {
+            if (window.pageClass !== 'watch') android.hidePlayback();
+        });
+
         // Observe changes in shorts ID and dispatch event
         const observeShortsId = () => {
             const currentShortsId = getShortsId(location.href);
@@ -137,7 +158,7 @@ try {
                 });
             }
         }
-        
+
 
         // Set video quality based on saved preference
         const setQualityOrSpeed = (player) => {

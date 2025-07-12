@@ -22,7 +22,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.FilenameUtils;
 
 public class DownloadService extends Service {
 
@@ -89,6 +88,37 @@ public class DownloadService extends Service {
     }
   }
 
+  public void initiateDownload(DownloadTask task) {
+    task.setState(DownloaderState.RUNNING);
+
+    download_executor.submit(
+        () -> {
+          // Check and create output directory
+          File outputDir =
+              new File(
+                  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
+                  getString(R.string.app_name));
+          if (!outputDir.exists()) {
+            boolean ignored = outputDir.mkdirs();
+          }
+          if (task.getVideoStream() != null) {
+            DownloadTask videoTask = task.clone();
+            videoTask.setFileName(
+                String.format("%s(%s)", task.getFileName(), task.getVideoStream().getResolution()));
+            videoTask.setOutput(new File(outputDir, task.getFileName() + ".mp4"));
+            videoTask.setIsAudio(false);
+            executeDownload(videoTask);
+          }
+          if (task.getIsAudio()) {
+            DownloadTask audioTask = task.clone();
+            audioTask.setFileName(String.format("(audio only) %s", task.getFileName()));
+            audioTask.setOutput(new File(outputDir, audioTask.getFileName() + ".m4a"));
+            audioTask.setVideoStream(null);
+            executeDownload(audioTask);
+          }
+        });
+  }
+
   private void executeDownload(DownloadTask task) {
     int taskId = taskIdCounter.getAndIncrement();
 
@@ -143,9 +173,6 @@ public class DownloadService extends Service {
                     file,
                     task.getIsAudio() ? "audio/*" : "video/*");
 
-            // Delete temporary files if any
-            deleteTempFiles(file);
-
             onTaskTerminated();
           }
 
@@ -157,7 +184,6 @@ public class DownloadService extends Service {
             Log.e(getString(R.string.failed_to_download), Log.getStackTraceString(error));
             showToast(getString(R.string.failed_to_download));
             task.getNotification().cancelDownload(getString(R.string.failed_to_download));
-            deleteTempFiles(output);
 
             onTaskTerminated();
           }
@@ -169,8 +195,6 @@ public class DownloadService extends Service {
             Log.e(getString(R.string.failed_to_download), "Download canceled by user");
             showToast(getString(R.string.download_canceled));
             task.getNotification().cancelDownload(getString(R.string.download_canceled));
-            deleteTempFiles(output);
-
             onTaskTerminated();
           }
 
@@ -184,39 +208,6 @@ public class DownloadService extends Service {
         this);
   }
 
-  public void initiateDownload(DownloadTask task) {
-    task.setState(DownloaderState.RUNNING);
-
-    download_executor.submit(
-        () -> {
-          // Check and create output directory
-          File outputDir =
-              new File(
-                  Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS),
-                  getString(R.string.app_name));
-          if (!outputDir.exists()) {
-            boolean ignored = outputDir.mkdirs();
-          }
-          task.setOutputDir(outputDir);
-          if (task.getVideoStream() != null) {
-            DownloadTask videoTask = task.clone();
-            videoTask.setFileName(
-                String.format("%s(%s)", task.getFileName(), task.getVideoStream().getResolution()));
-            videoTask.setOutput(new File(task.getOutputDir(), task.getFileName() + ".mp4"));
-            videoTask.setIsAudio(false);
-            executeDownload(videoTask);
-          }
-          if (task.getIsAudio()) {
-            DownloadTask audioTask = task.clone();
-            audioTask.setState(DownloaderState.RUNNING);
-            audioTask.setFileName(String.format("(audio only) %s", task.getFileName()));
-            audioTask.setOutput(new File(task.getOutputDir(), audioTask.getFileName() + ".m4a"));
-            audioTask.setVideoStream(null);
-            executeDownload(audioTask);
-          }
-        });
-  }
-
   private void cancelDownload(int taskId) {
     DownloadTask task = download_tasks.get(taskId);
     if (task != null) {
@@ -227,10 +218,6 @@ public class DownloadService extends Service {
       if (task.getNotification() != null) {
         task.getNotification().cancelDownload(getString(R.string.download_canceled));
       }
-
-      // Delete temporary files if any
-      deleteTempFiles(task.getOutput());
-
       onTaskTerminated();
     }
   }
@@ -252,8 +239,6 @@ public class DownloadService extends Service {
       if (task.getNotification() != null) {
         task.getNotification().clearDownload();
       }
-      // Delete temporary files if any
-      deleteTempFiles(task.getOutput());
 
       onTaskTerminated();
     }
@@ -276,15 +261,6 @@ public class DownloadService extends Service {
     }
   }
 
-  private void deleteTempFiles(File output) {
-    try {
-      FileUtils.deleteDirectory(
-          new File(output.getParent(), FilenameUtils.getBaseName(output.getPath())));
-    } catch (Exception e) {
-      Log.d("DownloadService", "Failed to delete temporary files: " + e.getMessage());
-    }
-  }
-
   @Override
   public boolean onUnbind(Intent intent) {
     return super.onUnbind(intent);
@@ -293,7 +269,7 @@ public class DownloadService extends Service {
   @Override
   public void onTaskRemoved(Intent rootIntent) {
     super.onTaskRemoved(rootIntent);
-    cancelAllDownloads();
+    stopForeground(true);
     stopSelf();
   }
 
@@ -301,11 +277,12 @@ public class DownloadService extends Service {
   public void onDestroy() {
     super.onDestroy();
 
+    // Stop the foreground service and remove the notification
+    stopForeground(true);
+
     // Cancel all downloads
     cancelAllDownloads();
 
-    // Stop the foreground service and remove the notification
-    stopForeground(true);
     // Shutdown the executor service
     download_executor.shutdown();
     try {
@@ -332,10 +309,6 @@ public class DownloadService extends Service {
 
           if (task.getNotification() != null) {
             task.getNotification().cancelDownload(getString(R.string.download_canceled));
-          }
-
-          if (task.getOutput() != null) {
-            deleteTempFiles(task.getOutput());
           }
         }
       }

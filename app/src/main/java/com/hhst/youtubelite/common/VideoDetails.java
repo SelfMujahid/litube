@@ -1,4 +1,4 @@
-package com.hhst.youtubelite.downloader;
+package com.hhst.youtubelite.common;
 
 import java.util.List;
 import lombok.AllArgsConstructor;
@@ -10,7 +10,7 @@ import org.schabi.newpipe.extractor.stream.VideoStream;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class DownloadDetails {
+public class VideoDetails {
   private String id;
   private String title;
   private String author;

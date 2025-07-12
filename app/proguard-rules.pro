@@ -50,7 +50,7 @@
 -dontwarn java.beans.PropertyDescriptor
 
 -dontobfuscate
--keepclassmembers class com.hhst.youtubelite.downloader.DownloadDetails { *; }
+-keepclassmembers class com.hhst.youtubelite.common.VideoDetails { *; }
 
 -dontwarn okio.**
 -dontwarn okhttp3.**

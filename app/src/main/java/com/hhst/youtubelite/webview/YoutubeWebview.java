@@ -271,4 +271,8 @@ public class YoutubeWebview extends WebView {
       return null;
     }
   }
+
+  public boolean isWatchPage() {
+    return getUrl() != null && getUrl().startsWith("https://m.youtube.com/watch?");
+  }
 }

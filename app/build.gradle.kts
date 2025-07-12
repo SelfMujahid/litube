@@ -72,10 +72,13 @@ android {
         implementation(libs.photoview)
         implementation(libs.appcompat)
         implementation(libs.material)
+        implementation(libs.mmkv)
+        implementation(libs.gson.v2131)
         implementation(libs.activity)
         implementation(libs.constraintlayout)
         implementation(libs.swiperefreshlayout)
         testImplementation(libs.junit)
+        testImplementation(libs.mockito.core)
         androidTestImplementation(libs.ext.junit)
         androidTestImplementation(libs.espresso.core)
     }

@@ -20,6 +20,8 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.hhst.youtubelite.FullScreenImageActivity;
 import com.hhst.youtubelite.MainActivity;
 import com.hhst.youtubelite.R;
+import com.hhst.youtubelite.common.VideoDetails;
+import com.hhst.youtubelite.common.YoutubeExtractor;
 import com.squareup.picasso.Picasso;
 import java.io.InterruptedIOException;
 import java.util.Locale;
@@ -38,7 +40,7 @@ public class DownloadDialog {
   private final String url;
   private final ExecutorService executor;
   private final CountDownLatch detailsLatch;
-  private DownloadDetails details;
+  private VideoDetails details;
   private View dialogView;
 
   public DownloadDialog(String url, Context context) {
@@ -63,7 +65,7 @@ public class DownloadDialog {
         () -> {
           try {
             // try to get details from cache
-            details = YoutubeDownloader.info(url);
+            details = YoutubeExtractor.info(url);
             detailsLatch.countDown();
           } catch (Exception e) {
             errHandler.accept(e);
