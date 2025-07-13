@@ -9,10 +9,12 @@ import com.hhst.youtubelite.common.YoutubeExtractor;
 import com.hhst.youtubelite.downloader.DownloadDialog;
 import com.hhst.youtubelite.extension.ExtensionDialog;
 import java.io.IOException;
+import java.util.concurrent.Executors;
 import org.schabi.newpipe.extractor.exceptions.ExtractionException;
 
 public class JavascriptInterface {
   private final Context context;
+  private final Handler mainHandler = new Handler(Looper.getMainLooper());
 
   public JavascriptInterface(Context context) {
     this.context = context;
@@ -25,56 +27,45 @@ public class JavascriptInterface {
 
   @android.webkit.JavascriptInterface
   public void finishRefresh() {
-    new Handler(Looper.getMainLooper())
-        .post(() -> ((MainActivity) context).swipeRefreshLayout.setRefreshing(false));
+    mainHandler.post(() -> ((MainActivity) context).swipeRefreshLayout.setRefreshing(false));
   }
 
   @android.webkit.JavascriptInterface
   public void setRefreshLayoutEnabled(boolean enabled) {
-    new Handler(Looper.getMainLooper())
-        .post(() -> ((MainActivity) context).swipeRefreshLayout.setEnabled(enabled));
+    mainHandler.post(() -> ((MainActivity) context).swipeRefreshLayout.setEnabled(enabled));
   }
 
   @android.webkit.JavascriptInterface
   public void download(String url) {
-    new Handler(Looper.getMainLooper()).post(() -> new DownloadDialog(url, context).show());
+    mainHandler.post(() -> new DownloadDialog(url, context).show());
   }
 
   @android.webkit.JavascriptInterface
   public void extension() {
-    new Handler(Looper.getMainLooper()).post(() -> new ExtensionDialog(context).build());
+    mainHandler.post(() -> new ExtensionDialog(context).build());
   }
 
   @android.webkit.JavascriptInterface
   public void showPlayback(String title, String author, String thumbnail, long duration) {
-    new Handler(Looper.getMainLooper())
-        .post(
-            () ->
-                ((MainActivity) context)
-                    .playbackService.showNotification(title, author, thumbnail, duration));
+    mainHandler.post(
+        () -> ((MainActivity) context).playbackService.showNotification(title, author, thumbnail, duration));
   }
 
   @android.webkit.JavascriptInterface
   public void hidePlayback() {
-    new Handler(Looper.getMainLooper())
-        .post(() -> ((MainActivity) context).playbackService.hideNotification());
+    mainHandler.post(() -> ((MainActivity) context).playbackService.hideNotification());
   }
 
   @android.webkit.JavascriptInterface
   public void updatePlayback(long pos, float playbackSpeed, boolean isPlaying) {
-    new Handler(Looper.getMainLooper())
-        .post(
-            () -> {
-              ((MainActivity) context)
-                  .playbackService.updateProgress(pos, playbackSpeed, isPlaying);
-              ((MainActivity) context).seekToPosition(pos);
-              ((MainActivity) context).setVideoPlayState(isPlaying);
-            });
+    mainHandler.postAtFrontOfQueue(
+        () -> ((MainActivity) context).playbackService.updateProgress(pos, playbackSpeed, isPlaying));
   }
 
+  @android.webkit.JavascriptInterface
   public void infoVideoDetails(String url) {
-    new Handler(Looper.getMainLooper())
-        .post(
+    Executors.newSingleThreadExecutor()
+        .execute(
             () -> {
               try {
                 YoutubeExtractor.info(url);
@@ -85,6 +76,6 @@ public class JavascriptInterface {
 
   @android.webkit.JavascriptInterface
   public void shareLink(String url) {
-    new Handler(Looper.getMainLooper()).post(() -> ((MainActivity) context).shareLink(url));
+    mainHandler.post(() -> ((MainActivity) context).shareLink(url));
   }
 }

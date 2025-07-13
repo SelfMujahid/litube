@@ -14,23 +14,14 @@ android {
         applicationId = "com.hhst.litube"
         minSdk = 26
         targetSdk = 35
-        versionCode = 19
-        versionName = "1.5.3.1"
+        versionCode = 20
+        versionName = "1.6.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 
 
-        """ndk {
-            abiFilters.addAll(listOf("arm64-v8a"))
-        }""".trimIndent()
-
-        splits {
-            abi {
-                isEnable = true
-                reset()
-                include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
-                isUniversalApk = false
-            }
+        ndk {
+            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
 
 

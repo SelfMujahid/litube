@@ -52,4 +52,8 @@
     <string name="remember_quality">Video kalitesini hatırla</string>
     <string name="background_play">Arka planda çalma özelliğini etkinleştir</string>
     <string name="remember_playback_speed">Oynatma hızını hatırla</string>
+    <string name="downloading_video">Video indiriliyor</string>
+    <string name="downloading_audio">Ses indiriliyor</string>
+    <string name="merging">Birleştiriliyor</string>
+    <string name="merging_audio_video">Ses ve video birleştiriliyor</string>
 </resources>

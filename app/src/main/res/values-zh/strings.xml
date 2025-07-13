@@ -53,4 +53,8 @@
     <string name="remember_quality">记住视频质量</string>
     <string name="background_play">启用后台播放</string>
     <string name="remember_playback_speed">记住播放速度</string>
+    <string name="downloading_video">视频下载中</string>
+    <string name="downloading_audio">音频下载中</string>
+    <string name="merging">合并中</string>
+    <string name="merging_audio_video">音视频合并中</string>
 </resources>

@@ -54,25 +54,24 @@ public class PlaybackService extends Service {
     super.onCreate();
     notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-    NotificationChannel channel =
-        new NotificationChannel(CHANNEL_ID, "Player Controls", NotificationManager.IMPORTANCE_LOW);
+    NotificationChannel channel = new NotificationChannel(CHANNEL_ID, "Player Controls",
+        NotificationManager.IMPORTANCE_LOW);
     channel.setDescription("Media playback controls");
     channel.setShowBadge(false);
     channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
     notificationManager.createNotificationChannel(channel);
 
     mediaSession = new MediaSessionCompat(this, TAG);
-    PlaybackStateCompat initialState =
-        new PlaybackStateCompat.Builder()
-            .setActions(
-                PlaybackStateCompat.ACTION_PLAY
-                    | PlaybackStateCompat.ACTION_PAUSE
-                    | PlaybackStateCompat.ACTION_PLAY_PAUSE
-                    | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                    | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-                    | PlaybackStateCompat.ACTION_SEEK_TO)
-            .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
-            .build();
+    PlaybackStateCompat initialState = new PlaybackStateCompat.Builder()
+        .setActions(
+            PlaybackStateCompat.ACTION_PLAY
+                | PlaybackStateCompat.ACTION_PAUSE
+                | PlaybackStateCompat.ACTION_PLAY_PAUSE
+                | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                | PlaybackStateCompat.ACTION_SEEK_TO)
+        .setState(PlaybackStateCompat.STATE_NONE, 0, 1.0f)
+        .build();
     mediaSession.setPlaybackState(initialState);
   }
 
@@ -129,7 +128,8 @@ public class PlaybackService extends Service {
   }
 
   private Bitmap fetchThumbnail(String url) {
-    if (url == null || url.isEmpty()) return null;
+    if (url == null || url.isEmpty())
+      return null;
     Bitmap bitmap = null;
     HttpURLConnection conn = null;
     InputStream inputStream = null;
@@ -147,7 +147,8 @@ public class PlaybackService extends Service {
           int x = (original.getWidth() - size) / 2;
           int y = (original.getHeight() - size) / 2;
           bitmap = Bitmap.createBitmap(original, x, y, size, size);
-          if (bitmap != original) original.recycle();
+          if (bitmap != original)
+            original.recycle();
         }
       }
     } catch (IOException e) {
@@ -159,42 +160,40 @@ public class PlaybackService extends Service {
         } catch (IOException ignored) {
         }
       }
-      if (conn != null) conn.disconnect();
+      if (conn != null)
+        conn.disconnect();
     }
     return bitmap;
   }
 
   private Notification buildNotification(boolean isPlaying) {
     MediaMetadataCompat metadata = mediaSession.getController().getMetadata();
-    if (metadata == null) return null;
+    if (metadata == null)
+      return null;
 
     String title = metadata.getString(MediaMetadataCompat.METADATA_KEY_TITLE);
     String artist = metadata.getString(MediaMetadataCompat.METADATA_KEY_ARTIST);
     Bitmap largeIcon = metadata.getBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART);
 
     int playPauseIconResId = isPlaying ? R.drawable.ic_pause : R.drawable.ic_play;
-    String playPauseActionTitle =
-        isPlaying ? getString(R.string.action_pause) : getString(R.string.action_play);
+    String playPauseActionTitle = isPlaying ? getString(R.string.action_pause) : getString(R.string.action_play);
 
-    PendingIntent playPauseActionIntent =
-        MediaButtonReceiver.buildMediaButtonPendingIntent(
-            this, PlaybackStateCompat.ACTION_PLAY_PAUSE);
-    PendingIntent prevActionIntent =
-        MediaButtonReceiver.buildMediaButtonPendingIntent(
-            this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
-    PendingIntent nextActionIntent =
-        MediaButtonReceiver.buildMediaButtonPendingIntent(
-            this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
+    PendingIntent playPauseActionIntent = MediaButtonReceiver.buildMediaButtonPendingIntent(
+        this, PlaybackStateCompat.ACTION_PLAY_PAUSE);
+    PendingIntent prevActionIntent = MediaButtonReceiver.buildMediaButtonPendingIntent(
+        this, PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS);
+    PendingIntent nextActionIntent = MediaButtonReceiver.buildMediaButtonPendingIntent(
+        this, PlaybackStateCompat.ACTION_SKIP_TO_NEXT);
 
     Intent launchIntent = getPackageManager().getLaunchIntentForPackage(getPackageName());
-    if (launchIntent == null) launchIntent = new Intent(this, MainActivity.class);
+    if (launchIntent == null)
+      launchIntent = new Intent(this, MainActivity.class);
     launchIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-    PendingIntent contentIntent =
-        PendingIntent.getActivity(
-            this,
-            101,
-            launchIntent,
-            PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    PendingIntent contentIntent = PendingIntent.getActivity(
+        this,
+        101,
+        launchIntent,
+        PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
     return new NotificationCompat.Builder(this, CHANNEL_ID)
         .setSmallIcon(R.drawable.ic_launcher_foreground)
@@ -221,26 +220,24 @@ public class PlaybackService extends Service {
     executorService.execute(
         () -> {
           Bitmap largeIcon = fetchThumbnail(thumbnail);
-          MediaMetadataCompat metadata =
-              new MediaMetadataCompat.Builder()
-                  .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
-                  .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, author)
-                  .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, largeIcon)
-                  .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration * 1000)
-                  .build();
+          MediaMetadataCompat metadata = new MediaMetadataCompat.Builder()
+              .putString(MediaMetadataCompat.METADATA_KEY_TITLE, title)
+              .putString(MediaMetadataCompat.METADATA_KEY_ARTIST, author)
+              .putBitmap(MediaMetadataCompat.METADATA_KEY_ALBUM_ART, largeIcon)
+              .putLong(MediaMetadataCompat.METADATA_KEY_DURATION, duration * 1000)
+              .build();
           mediaSession.setMetadata(metadata);
 
-          PlaybackStateCompat initialState =
-              new PlaybackStateCompat.Builder()
-                  .setActions(
-                      PlaybackStateCompat.ACTION_PLAY
-                          | PlaybackStateCompat.ACTION_PAUSE
-                          | PlaybackStateCompat.ACTION_PLAY_PAUSE
-                          | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                          | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-                          | PlaybackStateCompat.ACTION_SEEK_TO)
-                  .setState(PlaybackStateCompat.STATE_PAUSED, 0L, 1.0f)
-                  .build();
+          PlaybackStateCompat initialState = new PlaybackStateCompat.Builder()
+              .setActions(
+                  PlaybackStateCompat.ACTION_PLAY
+                      | PlaybackStateCompat.ACTION_PAUSE
+                      | PlaybackStateCompat.ACTION_PLAY_PAUSE
+                      | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                      | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                      | PlaybackStateCompat.ACTION_SEEK_TO)
+              .setState(PlaybackStateCompat.STATE_PAUSED, 0L, 1.0f)
+              .build();
           mediaSession.setPlaybackState(initialState);
 
           Notification notification = buildNotification(false);
@@ -260,25 +257,24 @@ public class PlaybackService extends Service {
 
   public void updateProgress(long pos, float playbackSpeed, boolean isPlaying) {
     // disable update while seeking
-    if (isSeeking) return;
+    if (isSeeking)
+      return;
 
     handler.removeCallbacks(timeoutRunnable);
     handler.postDelayed(timeoutRunnable, 1000);
     lastProgressPos = pos;
 
-    int stateCompat =
-        isPlaying ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
-    PlaybackStateCompat playbackState =
-        new PlaybackStateCompat.Builder()
-            .setActions(
-                PlaybackStateCompat.ACTION_PLAY
-                    | PlaybackStateCompat.ACTION_PAUSE
-                    | PlaybackStateCompat.ACTION_PLAY_PAUSE
-                    | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
-                    | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
-                    | PlaybackStateCompat.ACTION_SEEK_TO)
-            .setState(stateCompat, pos, playbackSpeed)
-            .build();
+    int stateCompat = isPlaying ? PlaybackStateCompat.STATE_PLAYING : PlaybackStateCompat.STATE_PAUSED;
+    PlaybackStateCompat playbackState = new PlaybackStateCompat.Builder()
+        .setActions(
+            PlaybackStateCompat.ACTION_PLAY
+                | PlaybackStateCompat.ACTION_PAUSE
+                | PlaybackStateCompat.ACTION_PLAY_PAUSE
+                | PlaybackStateCompat.ACTION_SKIP_TO_PREVIOUS
+                | PlaybackStateCompat.ACTION_SKIP_TO_NEXT
+                | PlaybackStateCompat.ACTION_SEEK_TO)
+        .setState(stateCompat, pos, playbackSpeed)
+        .build();
 
     mediaSession.setPlaybackState(playbackState);
     // disable update notification if state isn't change

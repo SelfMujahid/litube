@@ -57,8 +57,4 @@
     <string name="downloading_audio">Downloading audio</string>
     <string name="merging">Merging</string>
     <string name="merging_audio_video">Merging audio and video</string>
-    <string name="rewind_10_seconds">Rewind 10 seconds</string>
-    <string name="play_pause">Play/Pause</string>
-    <string name="forward_10_seconds">Forward 10 seconds</string>
-    <string name="close_picture_in_picture">Close Picture in Picture</string>
 </resources>

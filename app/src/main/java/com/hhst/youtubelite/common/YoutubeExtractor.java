@@ -22,6 +22,7 @@ import org.schabi.newpipe.extractor.stream.VideoStream;
 public class YoutubeExtractor {
   private final static MMKV cache = MMKV.defaultMMKV();
   private final static Gson gson = new Gson();
+
   public YoutubeExtractor() {
     NewPipe.init(DownloaderImpl.getInstance());
   }
@@ -73,18 +74,16 @@ public class YoutubeExtractor {
   public String getBestThumbnail(StreamInfo info) {
     var thumbnails = info.getThumbnails();
     Image bestThumbnail = null;
-    Map<Image.ResolutionLevel, Integer> resolutionPriority =
-        Map.of(
-            Image.ResolutionLevel.HIGH, 3,
-            Image.ResolutionLevel.MEDIUM, 2,
-            Image.ResolutionLevel.LOW, 1,
-            Image.ResolutionLevel.UNKNOWN, 0);
+    Map<Image.ResolutionLevel, Integer> resolutionPriority = Map.of(
+        Image.ResolutionLevel.HIGH, 3,
+        Image.ResolutionLevel.MEDIUM, 2,
+        Image.ResolutionLevel.LOW, 1,
+        Image.ResolutionLevel.UNKNOWN, 0);
     for (var thumbnail : thumbnails) {
 
       if (bestThumbnail == null
           || Objects.requireNonNullElse(
-                  resolutionPriority.get(thumbnail.getEstimatedResolutionLevel()), 0)
-              > Objects.requireNonNullElse(
+              resolutionPriority.get(thumbnail.getEstimatedResolutionLevel()), 0) > Objects.requireNonNullElse(
                   resolutionPriority.get(bestThumbnail.getEstimatedResolutionLevel()), 0)) {
         bestThumbnail = thumbnail;
       }

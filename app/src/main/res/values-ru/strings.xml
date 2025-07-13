@@ -52,4 +52,8 @@
     <string name="remember_quality">Запоминать качество видео</string>
     <string name="background_play">Включить воспроизведение в фоновом режиме</string>
     <string name="remember_playback_speed">Запоминать скорость воспроизведения</string>
+    <string name="downloading_video">Скачивание видео</string>
+    <string name="downloading_audio">Скачивание аудио</string>
+    <string name="merging">Объединение</string>
+    <string name="merging_audio_video">Объединение аудио и видео</string>
 </resources>
