@@ -40,6 +40,10 @@ public class DownloadService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
+    if (intent == null) {
+      return START_NOT_STICKY;
+    }
+    
     String action = intent.getAction();
     int taskId = intent.getIntExtra("taskId", -1);
     if ("CANCEL_DOWNLOAD".equals(action)) {

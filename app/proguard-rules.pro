@@ -51,6 +51,11 @@
 
 -dontobfuscate
 -keepclassmembers class com.hhst.youtubelite.common.VideoDetails { *; }
+-keep class com.googlecode.mp4parser.** { *; }
+-keep class com.coremedia.iso.** { *; }
+-keep class com.mp4parser.** { *; }
+-dontwarn java.awt.image.BufferedImage
+-dontwarn javax.imageio.ImageIO
 
 -dontwarn okio.**
 -dontwarn okhttp3.**

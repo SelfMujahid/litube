@@ -77,7 +77,9 @@ public class PlaybackService extends Service {
 
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
-    MediaButtonReceiver.handleIntent(mediaSession, intent);
+    if (intent != null) {
+      MediaButtonReceiver.handleIntent(mediaSession, intent);
+    }
     return super.onStartCommand(intent, flags, startId);
   }
 
