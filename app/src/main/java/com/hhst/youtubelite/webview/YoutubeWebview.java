@@ -31,6 +31,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import android.view.ViewGroup;
 import java.util.Objects;
 import org.apache.commons.io.IOUtils;
 
@@ -75,6 +76,8 @@ public class YoutubeWebview extends WebView {
     settings.setLoadWithOverviewMode(true);
     settings.setUseWideViewPort(true);
     settings.setLoadsImagesAutomatically(true);
+    settings.setSupportZoom(false);
+    settings.setBuiltInZoomControls(false);
     setLayerType(LAYER_TYPE_HARDWARE, null);
 
     addJavascriptInterface(new JavascriptInterface(getContext()), "android");
@@ -187,7 +190,12 @@ public class YoutubeWebview extends WebView {
               ((FrameLayout) mainActivity.getWindow().getDecorView()).removeView(fullscreen);
             }
 
-            fullscreen = view;
+            fullscreen = new ZoomableViewGroup(getContext());
+            ((ZoomableViewGroup) fullscreen)
+                .addView(
+                    view,
+                    new ViewGroup.LayoutParams(
+                        ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
             fullscreen.setSystemUiVisibility(
                 View.SYSTEM_UI_FLAG_LOW_PROFILE
                     | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -195,6 +203,7 @@ public class YoutubeWebview extends WebView {
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+
 
             ((FrameLayout) mainActivity.getWindow().getDecorView())
                 .addView(fullscreen, new FrameLayout.LayoutParams(-1, -1));

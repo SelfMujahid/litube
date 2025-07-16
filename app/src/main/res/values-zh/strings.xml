@@ -57,4 +57,5 @@
     <string name="downloading_audio">音频下载中</string>
     <string name="merging">合并中</string>
     <string name="merging_audio_video">音视频合并中</string>
+    <string name="reset">重置</string>
 </resources>

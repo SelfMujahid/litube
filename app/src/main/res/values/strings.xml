@@ -57,4 +57,5 @@
     <string name="downloading_audio">Downloading audio</string>
     <string name="merging">Merging</string>
     <string name="merging_audio_video">Merging audio and video</string>
+    <string name="reset">Reset</string>
 </resources>
