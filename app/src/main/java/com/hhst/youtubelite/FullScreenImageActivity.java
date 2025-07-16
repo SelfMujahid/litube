@@ -8,10 +8,14 @@ import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Toast;
+import androidx.activity.EdgeToEdge;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.FileProvider;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import com.github.chrisbanes.photoview.PhotoView;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.hhst.youtubelite.downloader.DownloadService;
@@ -22,9 +26,7 @@ import java.net.URL;
 import java.util.concurrent.Executors;
 import org.apache.commons.io.FileUtils;
 
-/**
- * Show the thumbnail image in full screen mode.
- */
+/** Show the thumbnail image in full screen mode. */
 public class FullScreenImageActivity extends AppCompatActivity {
 
   // thumbnail resource url
@@ -39,14 +41,15 @@ public class FullScreenImageActivity extends AppCompatActivity {
   @Override
   protected void onCreate(@Nullable Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    EdgeToEdge.enable(this);
     setContentView(R.layout.activity_fullscreen_image);
-    getWindow()
-        .setFlags(
-            WindowManager.LayoutParams.FLAG_FULLSCREEN, WindowManager.LayoutParams.FLAG_FULLSCREEN);
-    getWindow()
-        .getDecorView()
-        .setSystemUiVisibility(
-            View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN);
+    ViewCompat.setOnApplyWindowInsetsListener(
+        findViewById(android.R.id.content),
+        (v, insets) -> {
+          Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+          v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
+          return insets;
+        });
     PhotoView photoView = findViewById(R.id.photoView);
     // destroy this activity when click image or button
     photoView.setOnClickListener(view -> finish());
@@ -115,8 +118,7 @@ public class FullScreenImageActivity extends AppCompatActivity {
                                     this, R.string.failed_to_download_thumbnail, Toast.LENGTH_SHORT)
                                 .show());
                   }
-                }
-            );
+                });
     }
   }
 

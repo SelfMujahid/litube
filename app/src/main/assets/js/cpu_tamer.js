@@ -3,8 +3,8 @@
 // @name         YouTube CPU Tamer – Hybrid Edition (Improved)
 // @name:ja      YouTube CPU負荷軽減スクリプト – ハイブリッド方式（改良版）
 // @name:en      YouTube CPU Tamer – Hybrid Edition (Improved)
-// @name:zh-CN   YouTube CPU减负脚本 – 混合策略（改进版）
-// @name:zh-TW   YouTube CPU負載減輕工具 – 混合策略（改良版）
+// @name:zh-CN   YouTube CPU Load Reduction Script - Hybrid Strategy (Improved Version)
+// @name:zh-TW   YouTube CPU Load Reduction Tool - Hybrid Strategy (Improved Version)
 // @name:ko      YouTube CPU 부하 감소 스크립트 – 하이브리드 방식(개선판)
 // @name:fr      Réducteur de charge CPU YouTube – Édition Hybride (Améliorée)
 // @name:es      Reductor de carga de CPU para YouTube – Edición Híbrida (Mejorada)
@@ -15,7 +15,7 @@
 // @description         Reduce CPU load on YouTube using hybrid DOMMutation + AnimationFrame strategy with dynamic switching and delay correction
 // @description:ja      DOM変化とrequestAnimationFrameを組み合わせたハイブリッド戦略でYouTubeのCPU負荷を大幅軽減！遅延補正＆動的切替も搭載。
 // @description:en      Reduce CPU load on YouTube using hybrid DOMMutation + AnimationFrame strategy with dynamic switching and delay correction
-// @description:zh-CN   使用混合DOMMutation和requestAnimationFrame策略动态切换并校正延迟，降低YouTube的CPU负载
+// @description:zh-CN   Reduce YouTube CPU load using hybrid DOMMutation and requestAnimationFrame strategy with dynamic switching and delay correction
 // @description:zh-TW   採用混合DOMMutation與requestAnimationFrame策略，動態切換並修正延遲，降低YouTube的CPU負載
 // @description:ko      DOM 변화 감지 + 애니메이션 프레임 전략으로 YouTube CPU 부하 감소, 지연 보정 및 동적 전환 포함
 // @description:fr      Réduisez la charge CPU de YouTube avec une stratégie hybride DOMMutation + AnimationFrame, avec commutation dynamique et correction du délai

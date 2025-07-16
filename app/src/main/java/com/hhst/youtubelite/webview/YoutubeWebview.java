@@ -10,6 +10,7 @@ import android.net.Uri;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.ConsoleMessage;
 import android.webkit.CookieManager;
 import android.webkit.WebChromeClient;
@@ -31,7 +32,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import android.view.ViewGroup;
 import java.util.Objects;
 import org.apache.commons.io.IOUtils;
 
@@ -78,9 +78,10 @@ public class YoutubeWebview extends WebView {
     settings.setLoadsImagesAutomatically(true);
     settings.setSupportZoom(false);
     settings.setBuiltInZoomControls(false);
-    setLayerType(LAYER_TYPE_HARDWARE, null);
 
-    addJavascriptInterface(new JavascriptInterface(getContext()), "android");
+    JavascriptInterface jsInterface = new JavascriptInterface(getContext());
+    addJavascriptInterface(jsInterface, "android");
+    setTag(jsInterface);
 
     setWebViewClient(
         new WebViewClient() {
@@ -204,7 +205,6 @@ public class YoutubeWebview extends WebView {
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
                     | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
 
-
             ((FrameLayout) mainActivity.getWindow().getDecorView())
                 .addView(fullscreen, new FrameLayout.LayoutParams(-1, -1));
             fullscreen.setVisibility(View.VISIBLE);
@@ -283,5 +283,33 @@ public class YoutubeWebview extends WebView {
 
   public boolean isWatchPage() {
     return getUrl() != null && getUrl().startsWith("https://m.youtube.com/watch?");
+  }
+
+  @Override
+  protected void onDetachedFromWindow() {
+    super.onDetachedFromWindow();
+    clearHistory();
+    clearCache(true);
+    clearFormData();
+    clearSslPreferences();
+    clearMatches();
+    clearDisappearingChildren();
+  }
+
+  @Override
+  public void destroy() {
+    try {
+      JavascriptInterface jsInterface = (JavascriptInterface) getTag();
+      if (jsInterface != null) {
+        jsInterface.cleanup();
+      }
+    } catch (Exception e) {
+      Log.e("YoutubeWebview", "Error cleaning up JavascriptInterface", e);
+    }
+
+    setWebViewClient(null);
+    setWebChromeClient(null);
+    removeAllViews();
+    super.destroy();
   }
 }

@@ -43,8 +43,7 @@ public class MainActivity extends AppCompatActivity {
   public YoutubeWebview webview;
   public SwipeRefreshLayout swipeRefreshLayout;
   public ProgressBar progressBar;
-  @Getter
-  public DownloadService downloadService;
+  @Getter public DownloadService downloadService;
   public PlaybackService playbackService;
   private ServiceConnection playbackServiceConnection;
   private ServiceConnection downloadServiceConnection;
@@ -68,9 +67,9 @@ public class MainActivity extends AppCompatActivity {
 
     swipeRefreshLayout.setColorSchemeResources(R.color.light_blue, R.color.blue, R.color.dark_blue);
     swipeRefreshLayout.setOnRefreshListener(
-        () -> webview.evaluateJavascript(
-            "window.dispatchEvent(new Event('onRefresh'));", value -> {
-            }));
+        () ->
+            webview.evaluateJavascript(
+                "window.dispatchEvent(new Event('onRefresh'));", value -> {}));
     swipeRefreshLayout.setProgressViewOffset(true, 80, 180);
 
     Executors.newSingleThreadExecutor()
@@ -118,19 +117,19 @@ public class MainActivity extends AppCompatActivity {
 
     // check and require post-notification permission
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      if (ContextCompat.checkSelfPermission(this,
-          Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+      if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
+          != PackageManager.PERMISSION_GRANTED) {
         ActivityCompat.requestPermissions(
-            this, new String[] { Manifest.permission.POST_NOTIFICATIONS }, REQUEST_NOTIFICATION_CODE);
+            this, new String[] {Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_CODE);
       }
     }
 
     // check storage permission
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-      if (ContextCompat.checkSelfPermission(this,
-          Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+      if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
+          != PackageManager.PERMISSION_GRANTED) {
         ActivityCompat.requestPermissions(
-            this, new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_STORAGE_CODE);
+            this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_CODE);
       }
     }
   }
@@ -141,11 +140,13 @@ public class MainActivity extends AppCompatActivity {
     List<String> resourceDirs = Arrays.asList("css", "js");
     try {
       for (String dir : resourceDirs) {
-        List<String> resources = new ArrayList<>(Arrays.asList(Objects.requireNonNull(assetManager.list(dir))));
+        List<String> resources =
+            new ArrayList<>(Arrays.asList(Objects.requireNonNull(assetManager.list(dir))));
         // inject init.js or init.min.js
-        String initScript = resources.contains("init.js")
-            ? "init.js"
-            : resources.contains("init.min.js") ? "init.min.js" : null;
+        String initScript =
+            resources.contains("init.js")
+                ? "init.js"
+                : resources.contains("init.min.js") ? "init.min.js" : null;
         if (initScript != null) {
           webview.injectJavaScript(assetManager.open(dir + "/" + initScript));
           resources.remove(initScript);
@@ -167,11 +168,9 @@ public class MainActivity extends AppCompatActivity {
   @Override
   public boolean onKeyDown(int keyCode, KeyEvent keyEvent) {
     if (keyCode == android.view.KeyEvent.KEYCODE_BACK) {
-      webview.evaluateJavascript("window.dispatchEvent(new Event('onGoBack'));", value -> {
-      });
+      webview.evaluateJavascript("window.dispatchEvent(new Event('onGoBack'));", value -> {});
       if (webview.fullscreen != null && webview.fullscreen.getVisibility() == View.VISIBLE) {
-        webview.evaluateJavascript("document.exitFullscreen()", value -> {
-        });
+        webview.evaluateJavascript("document.exitFullscreen()", value -> {});
         return true;
       }
       if (webview.canGoBack()) {
@@ -186,16 +185,16 @@ public class MainActivity extends AppCompatActivity {
 
   private void startDownloadService() {
     // bind the download service
-    downloadServiceConnection = new ServiceConnection() {
-      @Override
-      public void onServiceConnected(ComponentName componentName, IBinder binder) {
-        downloadService = ((DownloadService.DownloadBinder) binder).getService();
-      }
+    downloadServiceConnection =
+        new ServiceConnection() {
+          @Override
+          public void onServiceConnected(ComponentName componentName, IBinder binder) {
+            downloadService = ((DownloadService.DownloadBinder) binder).getService();
+          }
 
-      @Override
-      public void onServiceDisconnected(ComponentName componentName) {
-      }
-    };
+          @Override
+          public void onServiceDisconnected(ComponentName componentName) {}
+        };
 
     Intent intent = new Intent(this, DownloadService.class);
     bindService(intent, downloadServiceConnection, Context.BIND_AUTO_CREATE);
@@ -203,17 +202,17 @@ public class MainActivity extends AppCompatActivity {
 
   private void startPlaybackService() {
     // bind
-    playbackServiceConnection = new ServiceConnection() {
-      @Override
-      public void onServiceConnected(ComponentName componentName, IBinder binder) {
-        playbackService = ((PlaybackService.PlaybackBinder) binder).getService();
-        playbackService.initialize(webview);
-      }
+    playbackServiceConnection =
+        new ServiceConnection() {
+          @Override
+          public void onServiceConnected(ComponentName componentName, IBinder binder) {
+            playbackService = ((PlaybackService.PlaybackBinder) binder).getService();
+            playbackService.initialize(webview);
+          }
 
-      @Override
-      public void onServiceDisconnected(ComponentName componentName) {
-      }
-    };
+          @Override
+          public void onServiceDisconnected(ComponentName componentName) {}
+        };
     Intent intent = new Intent(this, PlaybackService.class);
     bindService(intent, playbackServiceConnection, Context.BIND_AUTO_CREATE);
   }
@@ -237,7 +236,37 @@ public class MainActivity extends AppCompatActivity {
   @Override
   protected void onDestroy() {
     super.onDestroy();
-    unbindService(downloadServiceConnection);
-    unbindService(playbackServiceConnection);
+    if (playbackService != null) {
+      playbackService.hideNotification();
+      stopService(new Intent(this, PlaybackService.class));
+    }
+    if (downloadServiceConnection != null) {
+      unbindService(downloadServiceConnection);
+      downloadServiceConnection = null;
+    }
+    if (playbackServiceConnection != null) {
+      unbindService(playbackServiceConnection);
+      playbackServiceConnection = null;
+    }
+    if (webview != null) {
+      webview.setWebViewClient(null);
+      webview.setWebChromeClient(null);
+      webview.removeAllViews();
+      webview.destroy();
+      webview = null;
+    }
+    downloadService = null;
+    playbackService = null;
+
+    // Clear any pending tasks to prevent memory leaks
+    if (swipeRefreshLayout != null) {
+      swipeRefreshLayout.setOnRefreshListener(null);
+      swipeRefreshLayout = null;
+    }
+
+    progressBar = null;
+
+    // Force garbage collection to clean up memory
+    System.gc();
   }
 }

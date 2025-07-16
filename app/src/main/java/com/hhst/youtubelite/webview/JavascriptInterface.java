@@ -15,9 +15,13 @@ import org.schabi.newpipe.extractor.exceptions.ExtractionException;
 public class JavascriptInterface {
   private final Context context;
   private final Handler mainHandler = new Handler(Looper.getMainLooper());
-
+  
   public JavascriptInterface(Context context) {
     this.context = context;
+  }
+
+  public void cleanup() {
+    mainHandler.removeCallbacksAndMessages(null);
   }
 
   @android.webkit.JavascriptInterface
@@ -47,19 +51,32 @@ public class JavascriptInterface {
 
   @android.webkit.JavascriptInterface
   public void showPlayback(String title, String author, String thumbnail, long duration) {
-    mainHandler.post(
-        () -> ((MainActivity) context).playbackService.showNotification(title, author, thumbnail, duration));
+    mainHandler.post(() -> {
+      MainActivity activity = (MainActivity) context;
+      if (activity != null && activity.playbackService != null) {
+        activity.playbackService.showNotification(title, author, thumbnail, duration);
+      }
+    });
   }
 
   @android.webkit.JavascriptInterface
   public void hidePlayback() {
-    mainHandler.post(() -> ((MainActivity) context).playbackService.hideNotification());
+    mainHandler.post(() -> {
+      MainActivity activity = (MainActivity) context;
+      if (activity != null && activity.playbackService != null) {
+        activity.playbackService.hideNotification();
+      }
+    });
   }
 
   @android.webkit.JavascriptInterface
   public void updatePlayback(long pos, float playbackSpeed, boolean isPlaying) {
-    mainHandler.postAtFrontOfQueue(
-        () -> ((MainActivity) context).playbackService.updateProgress(pos, playbackSpeed, isPlaying));
+    mainHandler.postAtFrontOfQueue(() -> {
+      MainActivity activity = (MainActivity) context;
+      if (activity != null && activity.playbackService != null) {
+        activity.playbackService.updateProgress(pos, playbackSpeed, isPlaying);
+      }
+    });
   }
 
   @android.webkit.JavascriptInterface
