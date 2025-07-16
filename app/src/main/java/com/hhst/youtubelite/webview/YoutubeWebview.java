@@ -284,32 +284,4 @@ public class YoutubeWebview extends WebView {
   public boolean isWatchPage() {
     return getUrl() != null && getUrl().startsWith("https://m.youtube.com/watch?");
   }
-
-  @Override
-  protected void onDetachedFromWindow() {
-    super.onDetachedFromWindow();
-    clearHistory();
-    clearCache(true);
-    clearFormData();
-    clearSslPreferences();
-    clearMatches();
-    clearDisappearingChildren();
-  }
-
-  @Override
-  public void destroy() {
-    try {
-      JavascriptInterface jsInterface = (JavascriptInterface) getTag();
-      if (jsInterface != null) {
-        jsInterface.cleanup();
-      }
-    } catch (Exception e) {
-      Log.e("YoutubeWebview", "Error cleaning up JavascriptInterface", e);
-    }
-
-    setWebViewClient(null);
-    setWebChromeClient(null);
-    removeAllViews();
-    super.destroy();
-  }
 }

@@ -249,7 +249,6 @@ public class MainActivity extends AppCompatActivity {
       playbackServiceConnection = null;
     }
     if (webview != null) {
-      webview.setWebViewClient(null);
       webview.setWebChromeClient(null);
       webview.removeAllViews();
       webview.destroy();

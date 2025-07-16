@@ -20,10 +20,6 @@ public class JavascriptInterface {
     this.context = context;
   }
 
-  public void cleanup() {
-    mainHandler.removeCallbacksAndMessages(null);
-  }
-
   @android.webkit.JavascriptInterface
   public void test(String url) {
     Log.d("JavascriptInterface-test", url);

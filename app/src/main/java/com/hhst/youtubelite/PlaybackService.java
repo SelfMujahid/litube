@@ -42,7 +42,6 @@ public class PlaybackService extends Service {
   private final Runnable resetSeekFlagRunnable = () -> isSeeking = false;
   private boolean lastIsPlayingState = false;
   private long lastProgressPos = 0L;
-  private YoutubeWebview webview;
 
   @Nullable
   @Override
@@ -90,7 +89,6 @@ public class PlaybackService extends Service {
       stopSelf();
       return;
     }
-    this.webview = webview;
 
     mediaSession.setCallback(
         new MediaSessionCompat.Callback() {
@@ -319,7 +317,6 @@ public class PlaybackService extends Service {
     }
     handler.removeCallbacksAndMessages(null);
     executorService.shutdownNow();
-    webview = null;
   }
 
   public class PlaybackBinder extends Binder {
