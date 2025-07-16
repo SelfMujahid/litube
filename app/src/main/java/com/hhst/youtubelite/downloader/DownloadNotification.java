@@ -51,7 +51,7 @@ public class DownloadNotification {
     builder =
         new NotificationCompat.Builder(context, CHANNEL_ID)
             .setContentTitle(context.getString(R.string.downloading))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_notification_icon)
             .setContentText(content)
             .setStyle(new NotificationCompat.BigTextStyle().bigText(content))
             .setPriority(NotificationCompat.PRIORITY_HIGH)

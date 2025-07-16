@@ -199,7 +199,7 @@ public class PlaybackService extends Service {
             PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
 
     return new NotificationCompat.Builder(this, CHANNEL_ID)
-        .setSmallIcon(R.drawable.ic_launcher_foreground)
+        .setSmallIcon(R.drawable.ic_notification_icon)
         .setContentTitle(title)
         .setContentText(artist)
         .setLargeIcon(largeIcon)
