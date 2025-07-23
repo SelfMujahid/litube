@@ -19,9 +19,13 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
 
-
-        ndk {
-            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+        splits {
+            abi {
+                isEnable = true
+                isUniversalApk = true
+                reset()
+                include("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+            }
         }
 
 
@@ -35,6 +39,7 @@ android {
             }
         }
         compileOptions {
+            isCoreLibraryDesugaringEnabled = true
             sourceCompatibility = JavaVersion.VERSION_17
             targetCompatibility = JavaVersion.VERSION_17
         }
@@ -53,6 +58,7 @@ android {
     dependencies {
         compileOnly(libs.lombok)
         annotationProcessor(libs.lombok)
+        coreLibraryDesugaring(libs.desugar.jdk.libs.nio)
         implementation(libs.newpipeextractor)
         implementation(libs.library)
         implementation(libs.isoparser)
@@ -64,7 +70,6 @@ android {
         implementation(libs.appcompat)
         implementation(libs.material)
         implementation(libs.mmkv)
-        implementation(libs.gson.v2131)
         implementation(libs.activity)
         implementation(libs.constraintlayout)
         implementation(libs.swiperefreshlayout)

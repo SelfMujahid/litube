@@ -1,8 +1,8 @@
 [versions]
 agp = "8.9.1"
 commonsIo = "2.18.0"
+desugar_jdk_libs_nio = "2.1.5"
 gson = "2.12.1"
-gsonVersion = "2.13.1"
 isoparser = "1.0.6"
 junit = "4.13.2"
 junitVersion = "1.1.5"
@@ -23,8 +23,8 @@ swiperefreshlayout = "1.1.0"
 
 [libraries]
 commons-io = { module = "commons-io:commons-io", version.ref = "commonsIo" }
+desugar_jdk_libs_nio = { module = "com.android.tools:desugar_jdk_libs_nio", version.ref = "desugar_jdk_libs_nio" }
 gson = { module = "com.google.code.gson:gson", version.ref = "gson" }
-gson-v2131 = { module = "com.google.code.gson:gson", version.ref = "gsonVersion" }
 isoparser = { module = "com.googlecode.mp4parser:isoparser", version.ref = "isoparser" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
