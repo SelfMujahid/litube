@@ -11,9 +11,15 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
+import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -40,19 +46,31 @@ public class MainActivity extends AppCompatActivity {
 
   private static final int REQUEST_NOTIFICATION_CODE = 100;
   private static final int REQUEST_STORAGE_CODE = 101;
+
   public YoutubeWebview webview;
   public SwipeRefreshLayout swipeRefreshLayout;
   public ProgressBar progressBar;
+
   @Getter public DownloadService downloadService;
   public PlaybackService playbackService;
   private ServiceConnection playbackServiceConnection;
   private ServiceConnection downloadServiceConnection;
+
+  // --- NEW fields for mini-player feature ---
+  private GestureDetector gestureDetector;
+  private boolean isMiniPlayer = false;
+  private FrameLayout miniControls;
+  private ImageButton miniPlayPause;
+  private ImageView miniThumb;
+  private float lastTouchY = 0f;
+  private static final int SWIPE_THRESHOLD_DP = 100; // distance to trigger mini mode
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     EdgeToEdge.enable(this);
     setContentView(R.layout.activity_main);
+
     ViewCompat.setOnApplyWindowInsetsListener(
         findViewById(R.id.main),
         (v, insets) -> {
@@ -65,6 +83,11 @@ public class MainActivity extends AppCompatActivity {
     progressBar = findViewById(R.id.progressBar);
     webview = findViewById(R.id.webview);
 
+    // mini controls
+    miniControls = findViewById(R.id.miniControls);
+    miniPlayPause = findViewById(R.id.mini_play_pause);
+    miniThumb = findViewById(R.id.mini_thumb);
+
     swipeRefreshLayout.setColorSchemeResources(R.color.light_blue, R.color.blue, R.color.dark_blue);
     swipeRefreshLayout.setOnRefreshListener(
         () ->
@@ -72,6 +95,7 @@ public class MainActivity extends AppCompatActivity {
                 "window.dispatchEvent(new Event('onRefresh'));", value -> {}));
     swipeRefreshLayout.setProgressViewOffset(true, 80, 180);
 
+    // build & setup webview in background thread (same as before)
     Executors.newSingleThreadExecutor()
         .execute(
             () -> {
@@ -107,32 +131,178 @@ public class MainActivity extends AppCompatActivity {
                   });
             });
 
+    // setup mini-player gesture detector
+    initGestureDetector();
+
+    // attach touch listener on webview to detect swipe gestures
+    webview.setOnTouchListener(
+        (v, event) -> {
+          // If video fullscreen overlay is visible, ignore mini gestures
+          try {
+            if (webview.fullscreen != null && webview.fullscreen.getVisibility() == View.VISIBLE) {
+              return false;
+            }
+          } catch (Exception ignored) {
+          }
+          gestureDetector.onTouchEvent(event);
+          // allow webview to also handle touch events (do not consume)
+          return false;
+        });
+
+    // mini controls click (toggle play/pause)
+    miniPlayPause.setOnClickListener(
+        v -> {
+          if (playbackService != null) {
+            if (playbackService.isPlaying()) {
+              playbackService.pause();
+              miniPlayPause.setImageResource(android.R.drawable.ic_media_play);
+            } else {
+              playbackService.play();
+              miniPlayPause.setImageResource(android.R.drawable.ic_media_pause);
+            }
+          } else {
+            // fallback: evaluate JS to toggle play (if webview has html5 player)
+            webview.evaluateJavascript("document.querySelector('video')?.paused ? document.querySelector('video').play() : document.querySelector('video').pause()", value -> {});
+          }
+        });
+
     requestPermissions();
     startDownloadService();
     startPlaybackService();
     MMKV.initialize(this);
   }
 
-  public void requestPermissions() {
+  /* ----------------- Mini player / gesture code ----------------- */
 
-    // check and require post-notification permission
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-      if (ContextCompat.checkSelfPermission(this, Manifest.permission.POST_NOTIFICATIONS)
-          != PackageManager.PERMISSION_GRANTED) {
-        ActivityCompat.requestPermissions(
-            this, new String[] {Manifest.permission.POST_NOTIFICATIONS}, REQUEST_NOTIFICATION_CODE);
-      }
-    }
+  private void initGestureDetector() {
+    final float thresholdPx = dpToPx(SWIPE_THRESHOLD_DP);
+    gestureDetector =
+        new GestureDetector(
+            this,
+            new GestureDetector.SimpleOnGestureListener() {
+              @Override
+              public boolean onDown(MotionEvent e) {
+                lastTouchY = e.getY();
+                return false;
+              }
 
-    // check storage permission
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
-      if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
-          != PackageManager.PERMISSION_GRANTED) {
-        ActivityCompat.requestPermissions(
-            this, new String[] {Manifest.permission.WRITE_EXTERNAL_STORAGE}, REQUEST_STORAGE_CODE);
-      }
-    }
+              @Override
+              public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+                float dy = e2.getY() - e1.getY();
+                // downward fast swipe => enter mini mode
+                if (dy > thresholdPx && Math.abs(velocityY) > 500) {
+                  enterMiniPlayerMode();
+                  return true;
+                }
+                // upward fast swipe => exit mini mode
+                if (dy < -thresholdPx && Math.abs(velocityY) > 500) {
+                  exitMiniPlayerMode();
+                  return true;
+                }
+                return false;
+              }
+
+              @Override
+              public boolean onScroll(MotionEvent e1, MotionEvent e2, float distanceX, float distanceY) {
+                float dy = e2.getY() - e1.getY();
+                // slow drag down beyond threshold -> enter mini (on release will also enter)
+                if (dy > thresholdPx) {
+                  enterMiniPlayerMode();
+                  return true;
+                }
+                if (dy < -thresholdPx) {
+                  exitMiniPlayerMode();
+                  return true;
+                }
+                return false;
+              }
+            });
   }
+
+  private void enterMiniPlayerMode() {
+    if (isMiniPlayer) return;
+    // disable swipe refresh when mini
+    swipeRefreshLayout.setEnabled(false);
+
+    // calculate target size and translation (bottom-right)
+    webview.post(
+        () -> {
+          int screenW = getScreenWidth();
+          int screenH = getScreenHeight();
+
+          // target width = 45% of screen width, keep 16:9 ratio
+          int targetW = (int) (screenW * 0.45f);
+          int targetH = (int) (targetW * 9f / 16f);
+
+          float scaleX = (float) targetW / webview.getWidth();
+          float scaleY = (float) targetH / webview.getHeight();
+
+          // target translation to bottom-right with margin 12dp
+          float margin = dpToPx(12);
+          float tx = screenW - (webview.getWidth() * scaleX) - margin;
+          float ty = screenH - (webview.getHeight() * scaleY) - margin;
+
+          // animate scale and translation
+          webview.animate()
+              .scaleX(scaleX)
+              .scaleY(scaleY)
+              .translationX(tx)
+              .translationY(ty)
+              .setDuration(300)
+              .start();
+
+          // show mini controls (fade in)
+          miniControls.setVisibility(View.VISIBLE);
+          miniControls.setAlpha(0f);
+          miniControls.animate().alpha(1f).setDuration(250).start();
+
+          isMiniPlayer = true;
+        });
+  }
+
+  private void exitMiniPlayerMode() {
+    if (!isMiniPlayer) return;
+    // enable swipe refresh
+    swipeRefreshLayout.setEnabled(true);
+
+    webview.post(
+        () -> {
+          webview.animate()
+              .scaleX(1f)
+              .scaleY(1f)
+              .translationX(0f)
+              .translationY(0f)
+              .setDuration(300)
+              .start();
+
+          // hide mini controls
+          miniControls.animate()
+              .alpha(0f)
+              .setDuration(200)
+              .withEndAction(() -> miniControls.setVisibility(View.GONE))
+              .start();
+
+          isMiniPlayer = false;
+        });
+  }
+
+  private int getScreenWidth() {
+    DisplayMetrics dm = new DisplayMetrics();
+    getWindowManager().getDefaultDisplay().getMetrics(dm);
+    return dm.widthPixels;
+  }
+
+  private int getScreenHeight() {
+    DisplayMetrics dm = new DisplayMetrics();
+    getWindowManager().getDefaultDisplay().getMetrics(dm);
+    return dm.heightPixels;
+  }
+
+  private float dpToPx(int dp) {
+    return dp * getResources().getDisplayMetrics().density;
+  }
+
+  /* ----------------- End mini-player code ----------------- */
 
   private void loadScript() {
     AssetManager assetManager = getAssets();
@@ -171,6 +341,11 @@ public class MainActivity extends AppCompatActivity {
       webview.evaluateJavascript("window.dispatchEvent(new Event('onGoBack'));", value -> {});
       if (webview.fullscreen != null && webview.fullscreen.getVisibility() == View.VISIBLE) {
         webview.evaluateJavascript("document.exitFullscreen()", value -> {});
+        return true;
+      }
+      if (isMiniPlayer) {
+        // if in mini player, back should exit mini first
+        exitMiniPlayerMode();
         return true;
       }
       if (webview.canGoBack()) {
@@ -268,4 +443,4 @@ public class MainActivity extends AppCompatActivity {
     // Force garbage collection to clean up memory
     System.gc();
   }
-}
+  }
